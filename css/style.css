@@ -1,0 +1,261 @@
+@font-face { font-family: 'PS2P'; src: url('../fonts/PressStart2P-Regular.ttf') format('truetype'); font-display: block; }
+@font-face { font-family: 'Pixelify'; src: url('../fonts/PixelifySans.ttf') format('truetype'); font-weight: 400 700; font-display: block; }
+
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; background: #1a1230; overflow: hidden; }
+body {
+  display: flex; align-items: center; justify-content: center;
+  -webkit-tap-highlight-color: transparent; user-select: none; -webkit-user-select: none;
+  touch-action: manipulation;
+}
+
+/* ---------- theme ---------- */
+.theme-bright {
+  --ink: #2c1f45;
+  --paper: #fff8e9;
+  --paper2: #ffeccc;
+  --accent: #ff5d8f;
+  --accent2: #ffd166;
+  --go: #7ae582;
+  --p: .32cqw;          /* one "UI pixel" */
+  --fs: 1.75cqw;        /* dialogue font size */
+}
+
+#game {
+  font-variant-ligatures: none; font-feature-settings: 'liga' 0, 'clig' 0;
+  position: relative;
+  width: min(100vw, calc(100dvh * 16 / 9));
+  aspect-ratio: 16 / 9;
+  container-type: inline-size;
+  overflow: hidden;
+  background: #000;
+  font-family: 'Pixelify', 'PS2P', monospace;
+  color: var(--ink);
+}
+#stage { position: absolute; inset: 0; }
+#cv {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  image-rendering: pixelated; image-rendering: crisp-edges; display: block;
+}
+
+/* pixel frame (notched corners) */
+.pframe {
+  background: var(--paper);
+  box-shadow:
+    0 calc(-1 * var(--p)) 0 0 var(--ink),
+    0 var(--p) 0 0 var(--ink),
+    calc(-1 * var(--p)) 0 0 0 var(--ink),
+    var(--p) 0 0 0 var(--ink),
+    0 calc(2.2 * var(--p)) 0 0 rgba(44,31,69,.35);
+}
+
+/* ---------- buttons ---------- */
+.pbtn {
+  font-family: 'PS2P', monospace; font-size: 1.9cqw; letter-spacing: .1cqw;
+  color: var(--ink); background: var(--accent2);
+  border: 0; padding: 1.25cqw 2.6cqw; cursor: pointer; position: relative;
+  box-shadow:
+    0 calc(-1 * var(--p)) 0 0 var(--ink),
+    0 var(--p) 0 0 var(--ink),
+    calc(-1 * var(--p)) 0 0 0 var(--ink),
+    var(--p) 0 0 0 var(--ink),
+    inset 0 calc(-1.6 * var(--p)) 0 0 rgba(0,0,0,.18),
+    inset 0 calc(1.2 * var(--p)) 0 0 rgba(255,255,255,.55),
+    0 calc(2.6 * var(--p)) 0 0 rgba(44,31,69,.45);
+  transition: transform .08s steps(2), filter .1s;
+}
+.pbtn:hover, .pbtn:focus-visible { transform: translateY(calc(-1 * var(--p))); filter: brightness(1.08); outline: none; }
+.pbtn:active { transform: translateY(var(--p)); }
+.pbtn[disabled] { filter: grayscale(.7) brightness(.95); cursor: not-allowed; transform: none; }
+.pbtn-go { background: var(--go); }
+.pbtn-pink { background: #ff9ec4; }
+
+/* ---------- overlays ---------- */
+.overlay { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+[hidden] { display: none !important; }
+
+/* menu */
+#menu { justify-content: flex-start; padding-top: 7.5cqw; }
+#logo {
+  margin: 0; font-family: 'PS2P', monospace; font-weight: normal;
+  font-size: 13cqw; line-height: 1; display: flex; gap: .6cqw;
+}
+#logo span {
+  display: inline-block; color: var(--c);
+  text-shadow:
+    .5cqw 0 0 #fff, -.5cqw 0 0 #fff, 0 .5cqw 0 #fff, 0 -.5cqw 0 #fff,
+    .5cqw .5cqw 0 #fff, -.5cqw .5cqw 0 #fff, .5cqw -.5cqw 0 #fff, -.5cqw -.5cqw 0 #fff,
+    1cqw 0 0 var(--ink), -1cqw 0 0 var(--ink), 0 1cqw 0 var(--ink), 0 -1cqw 0 var(--ink),
+    1cqw 1cqw 0 var(--ink), -1cqw 1cqw 0 var(--ink), 1cqw -1cqw 0 var(--ink), -1cqw -1cqw 0 var(--ink),
+    0 2cqw 0 var(--ink);
+  animation: hop 1.6s steps(8) infinite;
+  animation-delay: calc(var(--i) * -0.2s);
+}
+@keyframes hop {
+  0%, 100% { transform: translateY(0) rotate(0); }
+  25% { transform: translateY(-1.4cqw) rotate(-3deg); }
+  50% { transform: translateY(0) rotate(0); }
+  75% { transform: translateY(-.5cqw) rotate(2deg); }
+}
+#logo.glitch span { color: #2c1f45; text-shadow: .6cqw 0 0 #7a0c2e, -.6cqw 0 0 #0c3a7a; transform: translateX(.4cqw) skewX(-8deg); }
+.menu-sub {
+  margin-top: 3.6cqw; font-family: 'PS2P', monospace; font-size: 1.3cqw; color: #fff;
+  text-shadow: .25cqw .25cqw 0 var(--ink), -.25cqw .25cqw 0 var(--ink), .25cqw -.25cqw 0 var(--ink), -.25cqw -.25cqw 0 var(--ink);
+}
+.menu-btns { margin-top: 5.2cqw; display: flex; gap: 3.5cqw; }
+.menu-btns .pbtn { font-size: 2.3cqw; min-width: 19cqw; }
+.savehint {
+  margin-top: 2.6cqw; min-height: 1.4cqw; font-family: 'PS2P', monospace; font-size: 1.05cqw; color: #fff;
+  text-shadow: .2cqw .2cqw 0 var(--ink), -.2cqw .2cqw 0 var(--ink), .2cqw -.2cqw 0 var(--ink), -.2cqw -.2cqw 0 var(--ink);
+}
+
+/* name card */
+#namecard .card {
+  width: 44cqw; padding: 2.6cqw 3cqw 2.8cqw; display: flex; flex-direction: column; align-items: stretch; gap: 1.1cqw;
+  background: var(--paper);
+  box-shadow:
+    0 calc(-1 * var(--p)) 0 0 var(--ink), 0 var(--p) 0 0 var(--ink),
+    calc(-1 * var(--p)) 0 0 0 var(--ink), var(--p) 0 0 0 var(--ink),
+    inset 0 0 0 calc(1.4 * var(--p)) var(--paper2),
+    0 calc(3 * var(--p)) 0 0 rgba(44,31,69,.4);
+  animation: pop .45s steps(5);
+}
+@keyframes pop { from { transform: scale(.6); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+.card-title { margin: 0 0 .6cqw; text-align: center; font-family: 'PS2P', monospace; font-weight: normal; font-size: 2.2cqw; color: var(--accent); text-shadow: .25cqw .25cqw 0 var(--ink); }
+#namecard label { font-family: 'PS2P', monospace; font-size: 1.3cqw; }
+#nameInput {
+  font-family: 'PS2P', monospace; font-size: 2cqw; color: var(--ink);
+  padding: 1.1cqw 1.2cqw; border: 0; outline: none; background: #fff;
+  box-shadow: inset 0 0 0 var(--p) var(--ink), inset calc(var(--p)*2) calc(var(--p)*2) 0 0 #e9dcff;
+  caret-color: var(--accent);
+}
+#nameInput::placeholder { color: #b8a9cc; }
+#nameInput:focus { box-shadow: inset 0 0 0 var(--p) var(--accent), inset calc(var(--p)*2) calc(var(--p)*2) 0 0 #ffe0ec; }
+.err { min-height: 1.3cqw; font-family: 'PS2P', monospace; font-size: 1cqw; color: #d6336c; }
+#namecard .pbtn { align-self: center; margin-top: .4cqw; }
+
+/* cutscene */
+#cuttext {
+  position: absolute; left: 50%; transform: translateX(-50%); width: max-content; max-width: 88%; bottom: 19%; padding: 1.2cqw 2cqw; background: rgba(26,18,48,.55); text-align: center;
+  font-family: 'PS2P', monospace; font-size: 2cqw; line-height: 1.6; color: #fff;
+  text-shadow: .26cqw .26cqw 0 #1a1230;
+  min-height: 4cqw; cursor: pointer;
+}
+#cuttext:empty { visibility: hidden; }
+#cutchoices { position: absolute; left: 0; right: 0; bottom: 8%; display: flex; justify-content: center; }
+#cutchoices .pbtn { animation: pop .4s steps(5); }
+
+/* typing */
+.typed .rest { visibility: hidden; }
+
+/* dialogue box */
+#dialog {
+  position: absolute; left: 3%; right: 3%; bottom: 3.2%;
+  min-height: 26%;
+  padding: 1.7cqw 2.4cqw 1.6cqw;
+  background: var(--paper);
+  box-shadow:
+    0 calc(-1 * var(--p)) 0 0 var(--ink), 0 var(--p) 0 0 var(--ink),
+    calc(-1 * var(--p)) 0 0 0 var(--ink), var(--p) 0 0 0 var(--ink),
+    inset 0 0 0 calc(1.3 * var(--p)) var(--paper2),
+    0 calc(2.6 * var(--p)) 0 0 rgba(44,31,69,.45);
+  cursor: pointer; display: flex; flex-direction: column;
+  animation: rise .35s steps(5);
+}
+@keyframes rise { from { transform: translateY(20%); opacity: 0; } to { transform: none; opacity: 1; } }
+#dialog .nametag {
+  position: absolute; top: calc(-1 * 2.9cqw); left: 2cqw;
+  font-family: 'PS2P', monospace; font-size: 1.35cqw; color: #fff; background: var(--accent);
+  padding: .8cqw 1.4cqw;
+  box-shadow:
+    0 calc(-1 * var(--p)) 0 0 var(--ink), 0 var(--p) 0 0 var(--ink),
+    calc(-1 * var(--p)) 0 0 0 var(--ink), var(--p) 0 0 0 var(--ink);
+  text-shadow: .2cqw .2cqw 0 var(--ink);
+}
+#dialog .row { display: flex; gap: 1.8cqw; align-items: flex-start; }
+#dialog .portrait {
+  flex: none; width: 8.4cqw; height: 8.4cqw; image-rendering: pixelated; margin-top: .2cqw;
+  box-shadow: 0 calc(-1 * var(--p)) 0 0 var(--ink), 0 var(--p) 0 0 var(--ink), calc(-1 * var(--p)) 0 0 0 var(--ink), var(--p) 0 0 0 var(--ink);
+}
+#dialog .text {
+  flex: 1;
+  font-family: 'Pixelify', monospace; font-weight: 500; font-size: var(--fs); line-height: 1.45; min-height: 2.6em;
+}
+#dialog .text.narration { color: #5a4a78; font-style: normal; }
+#dialog .next {
+  position: absolute; right: 2cqw; bottom: 1.2cqw; font-size: 1.3cqw; color: var(--accent);
+  animation: blink 1s steps(2) infinite; opacity: 0;
+}
+#dialog.more .next { opacity: 1; }
+@keyframes blink { 50% { visibility: hidden; } }
+#dialog .choices { display: flex; flex-wrap: wrap; gap: 1.4cqw 1.6cqw; margin-top: 1.2cqw; }
+#dialog .choices:empty { display: none; }
+#dialog .choices .pbtn {
+  flex: 1 1 0; min-width: 0; font-family: 'Pixelify', monospace; font-weight: 600; font-size: 1.75cqw;
+  padding: 1cqw 1.2cqw; text-align: left; line-height: 1.2;
+  background: #ffffff; animation: pop .3s steps(4) both;
+}
+#dialog .choices .pbtn:nth-child(1) { background: #ffe08a; }
+#dialog .choices .pbtn:nth-child(2) { background: #b8f0c0; animation-delay: .06s; }
+#dialog .choices .pbtn:nth-child(3) { background: #c9e4ff; animation-delay: .12s; }
+#dialog .choices .pbtn:nth-child(4) { background: #ffc6dc; animation-delay: .18s; }
+#dialog .choices .pbtn .k { font-family: 'PS2P', monospace; font-size: 1.05cqw; opacity: .55; margin-right: .8cqw; }
+
+/* HUD */
+#hud { position: absolute; top: 2.2cqw; right: 2.2cqw; display: flex; flex-direction: column; align-items: center; gap: .6cqw; animation: pop .4s steps(5); }
+#hud .slot {
+  width: 6.6cqw; height: 6.6cqw; background: var(--paper); display: flex; align-items: center; justify-content: center;
+  box-shadow:
+    0 calc(-1 * var(--p)) 0 0 var(--ink), 0 var(--p) 0 0 var(--ink),
+    calc(-1 * var(--p)) 0 0 0 var(--ink), var(--p) 0 0 0 var(--ink),
+    inset 0 0 0 calc(1.2 * var(--p)) #e8d8ff, 0 calc(2 * var(--p)) 0 0 rgba(44,31,69,.4);
+}
+#hud .slot canvas { width: 5cqw; height: 5cqw; image-rendering: pixelated; }
+#hud .slot-label {
+  font-family: 'PS2P', monospace; font-size: .85cqw; color: #fff; max-width: 14cqw; text-align: center; line-height: 1.4;
+  text-shadow: .2cqw .2cqw 0 var(--ink), -.2cqw .2cqw 0 var(--ink), .2cqw -.2cqw 0 var(--ink), -.2cqw -.2cqw 0 var(--ink);
+}
+#hud.empty .slot canvas { opacity: .25; }
+
+/* TBC */
+#tbc { gap: 2.4cqw; }
+.tbc-title {
+  margin: 0; font-family: 'PS2P', monospace; font-weight: normal; font-size: 4.2cqw; color: #ffe08a;
+  text-shadow: .4cqw .4cqw 0 #2c1f45, -.4cqw .4cqw 0 #2c1f45, .4cqw -.4cqw 0 #2c1f45, -.4cqw -.4cqw 0 #2c1f45, 0 1cqw 0 rgba(44,31,69,.6);
+  animation: float 3s ease-in-out infinite;
+}
+.tbc-title .dots { display: inline-block; width: 3em; text-align: left; }
+@keyframes float { 50% { transform: translateY(-.8cqw); } }
+.tbc-sub { margin: 0; font-family: 'PS2P', monospace; font-size: 1.25cqw; color: #fff; text-shadow: .2cqw .2cqw 0 #2c1f45; }
+
+/* fade + card */
+#fade { position: absolute; inset: 0; background: #000; opacity: 1; pointer-events: none; transition: opacity .45s ease; z-index: 50; }
+#fade.clear { opacity: 0; }
+#card {
+  position: absolute; left: 8%; right: 8%; top: 50%; transform: translateY(-50%); z-index: 51; text-align: center;
+  font-family: 'PS2P', monospace; font-size: 2cqw; line-height: 1.7; color: #fff; pointer-events: none; opacity: 0; transition: opacity .3s;
+}
+#card.on { opacity: 1; }
+
+/* ---------- portrait / narrow: dialogue goes under the picture ---------- */
+@media (max-aspect-ratio: 1/1) {
+  .theme-bright { --p: .6cqw; --fs: 4.4cqw; }
+  #game { width: 100vw; height: 100dvh; aspect-ratio: auto; display: flex; flex-direction: column; justify-content: center; background: #1a1230; }
+  #stage { position: relative; inset: auto; width: 100%; aspect-ratio: 16 / 9; flex: none; }
+  #dialog { position: relative; left: auto; right: auto; bottom: auto; margin: 7cqw 4cqw 4cqw; min-height: 0; padding: 4cqw 4.5cqw; }
+  #dialog .portrait { width: 16cqw; height: 16cqw; }
+  #dialog .nametag { top: -6cqw; font-size: 3.2cqw; padding: 1.6cqw 2.6cqw; }
+  #dialog .choices { flex-direction: column; gap: 3cqw; margin-top: 3.4cqw; }
+  #dialog .choices .pbtn { font-size: 4.2cqw; padding: 2.6cqw 3cqw; }
+  #dialog .choices .pbtn .k { font-size: 2.6cqw; }
+  #dialog .next { font-size: 3cqw; right: 3cqw; bottom: 2cqw; }
+  .pbtn { font-size: 3.4cqw; padding: 2.4cqw 4cqw; }
+  .menu-btns .pbtn { font-size: 3.4cqw; }
+  #namecard .card { width: 78cqw; padding: 3cqw; gap: 1.6cqw; }
+  .card-title { font-size: 3.4cqw; } #namecard label { font-size: 2.6cqw; } #nameInput { font-size: 3.6cqw; } .err { font-size: 2.2cqw; }
+  #cuttext { font-size: 3.2cqw; bottom: 22%; }
+  #card { font-size: 3.8cqw; }
+  .tbc-title { font-size: 5.6cqw; } .tbc-sub { font-size: 2.4cqw; }
+  #hud .slot { width: 10cqw; height: 10cqw; } #hud .slot canvas { width: 8cqw; height: 8cqw; } #hud .slot-label { font-size: 1.8cqw; max-width: 24cqw; }
+  .menu-sub { font-size: 2.2cqw; } .savehint { font-size: 2cqw; }
+}

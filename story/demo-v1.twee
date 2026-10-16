@@ -1,0 +1,134 @@
+:: StoryTitle
+Demo Game
+
+
+:: StoryData
+{
+  "ifid": "21AE299E-BFDA-45DF-8AF9-6AAF414F260A",
+  "format": "Harlowe",
+  "format-version": "3.3.9",
+  "start": "Menü",
+  "tag-colors": {
+    "NOT": "blue",
+    "Cutscene": "green",
+    "Character": "blue"
+  },
+  "zoom": 1
+}
+
+
+:: Continue [Cutscene] {"position":"550,650","size":"100,100"}
+Bir cutscene olacak, yavaş yavaş gözünü açan bir karakterin pov'undan. Typing efektli, pixel art text geçerken karakterin gözü yavaşça açılacak ve etrafı cıvıl cıvıl görecek, gökyüzü parlak, güneş parlıyor, kuşlar uçuyor. Metinler parça parça geçsin, ingilizceye çevrilsin tabi. 
+
+"Günaydın (isim)"
+"Bugün güzel bir gün olacağa benziyor"
+"Hazırsan başlayalım"
+
+[[Yes, I'm Ready]]
+
+
+
+:: Defol git, aptal herif! {"position":"425,1025","size":"100,100"}
+
+
+
+:: Görmezden gel {"position":"550,1025","size":"100,100"}
+Karakter hızlı bir şekilde yürür, Osvaldo'yu görmezden gelir. 
+Yeni sahnede sokağın sonuna ulaşır, burada kavga eden iki kişi görür. 
+
+[[İlerle]]
+[[Müdahale et]]
+[[Polisi ara]]
+
+
+
+
+:: Menü {"position":"550,400","size":"100,100"}
+Ana başlangıçta açılacak olan menü. 
+Büyük bir font, hareketli bir logo ile oyunun adı olan "Life" yazacak. 
+Tema çok canlı, güzel ve korkuyu barındırmayan bir şey olmalı. Zamanla korkuya transform olacak. 
+
+Menüde iki seçenek olacak, başla ve sıfırla. Sıfırlaya tıklandığı zaman oyun sıfırlanacak, tekrar baştan karakter oluşturulmaya başlayacak. 
+
+[[Start]]
+[[Restart]] (Bu seçeneğe tıklanırsa oyun baştan başlasın)
+
+
+
+:: Müdahale et {"position":"487.5,1275","size":"100,100"}
+
+
+
+:: No {"position":"550,900","size":"100,100"}
+Karakter kapıdan çıkıyor, sao paulo'ya benzeyen bir sokak var. Yerde bir evsiz yatıyor. Karakterin adı Osvaldo.
+
+Osvaldo:
+
+"Hey, adın ne güzelim? Muhabbet etmek ister misin?"
+
+[[Defol git, aptal herif!]]
+[[Görmezden gel]]
+[[Sohbet et]]
+
+
+:: Osvaldo [Character] {"position":"400,275","size":"100,100"}
+Evsiz, sokakta yaşayan kirli bir adam. 
+Huysuz ve sinirli bir yüz ifadesi var. Elinde her zaman bir ısırılmış soğan taşıyor. 
+
+
+:: Oyun/Hikaye Detayları [NOT] {"position":"550,275","size":"100,100"}
+Oyunun teması korku olacak. Bu nedenle atmosfer söylendiği yerde karanlık, söylendiği yerde aydınlık olmalı. 
+
+Her bölümde seçenekler ve detaylar verilecek. 
+
+Aksi söylenmedikçe, Türkçe yazan her şeyi İngilizce'ye çevirmelisin. Tüm oyun ingilizce dilinde olacak ancak ben parçaları Türkçe yazacağım.
+
+Pixel art stilinde olacak, pixel artlar hareketli olursa iyi olur, örneğin yaylansın, sıcak şeylerde duman tütsün vs gibi uygun şeyler istiyorum.
+
+
+:: Polisi ara {"position":"612.5,1275","size":"100,100"}
+
+
+
+:: Random Slyvanian Family {"position":"225,900","size":"100,100"}
+
+
+
+:: Restart {"position":"675,525","size":"100,100"}
+
+
+
+:: Sarı Biber {"position":"875,850","size":"100,100"}
+
+
+
+:: Sohbet et {"position":"675,1025","size":"100,100"}
+
+
+
+:: Start {"position":"550,525","size":"100,100"}
+Burada karakter oluşturacağız. 
+
+Doldurulması istenen bir "Name" alanı olsun. Oyunun temasına uygun bir tasarım.
+
+[[Continue]]
+
+
+:: Yes, I'm Ready {"position":"550,775","size":"100,100"}
+İlk sahnemiz, karakterimiz gözünü açıyor, bir odada. Sevimli, bir kız çocuğu odası, masada slyvanian families mole set duruyor, birkaç oyuncak var, sarı bir dolma biber plushie yatakta duruyor. 
+
+Seçimi yaptıktan sonra sahne değişiyor.
+
+Text box:
+
+Bugün yanına bir trinket almak ister misin?
+
+[[Sarı Biber]]
+[[Random Slyvanian Family]]
+[[No]]
+
+(Sarı biber türkçe kalsın)
+
+
+:: İlerle {"position":"550,1150","size":"100,100"}
+
