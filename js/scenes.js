@@ -342,6 +342,7 @@ window.SCENES = {
 
   /* ---------------- hospital ---------------- */
   'Cutscene - Pre-Hospital': {
+    cutscene: true, // twee [Cutscene]: dialogue-style, but skippable
     art: 'hospital', effect: 'eyelids', delay: 3.2,
     lines: [
       'Your eyes slowly open. You are lying in a hospital bed. A monitor beeps softly beside you.',
@@ -385,8 +386,204 @@ window.SCENES = {
   /* ---- not written yet in the Twine file -> "To be continued..." ---- */
   'Dondurma Sınıfı':       { type: 'tbc' },
   'TCM Sınıfı':            { type: 'tbc' },
-  'Gece - bilgisayarı aç': { type: 'tbc' },
-  'Gece- dışarı çık':      { type: 'tbc' },
+  'Dog Walker iş - Görüşme': { type: 'tbc' },
+  'Kurye İş - Görüşme':      { type: 'tbc' },
+  'Bekçi iş - Görüşme':      { type: 'tbc' },
+
+  /* ================= v3: the night ================= */
+  'Gece - bilgisayarı aç': {
+    art: 'pcDesktop',
+    lines: ['You turn on the computer. Its glow fills the dark room.', '"What should I do now...?" you wonder.'],
+    choices: [
+      { label: 'Play a game', to: 'Oyun oyna' },
+      { label: 'Look for a job', to: 'İş ara' },
+    ],
+  },
+  'Oyun oyna': {
+    art: 'farmGame',
+    lines: [
+      'A tiny farming game pops up on the screen. Cozy Farm!',
+      'Click or tap the field to walk, click crops to pick them. (Arrow keys / WASD work too.)',
+    ],
+    choices: [
+      { label: 'Pick tomatoes', to: 'Domates topla' },
+      { label: 'Pick potatoes', to: 'Patates topla' },
+    ],
+  },
+  'Domates topla': {
+    type: 'cutscene', art: 'farmHorror',
+    lines: [
+      { text: 'KRAKOOM! Thunder rumbles outside.', hold: 1.2 },
+      { text: 'For a moment, everything goes black...', hold: 1.6 },
+      { text: 'The game flickers back on. But the field... is not the same anymore.', hold: 2 },
+      { text: 'Are you sure?', hold: 0.6 },
+    ],
+    choices: [
+      { label: "I'm sure, pick tomatoes", to: 'Domates - Confirm' },
+      { label: 'Pick potatoes', to: 'Patates topla' },
+    ],
+  },
+  'Domates - Confirm': {
+    type: 'cutscene', art: 'pcBroken',
+    lines: [
+      { text: 'Lightning strikes again. CRACK!', hold: 1.2 },
+      { text: "Smoke starts pouring out of the computer. It's broken. It won't turn on anymore.", hold: 1.8 },
+      { text: 'Then the power goes out. The whole house is dark.', hold: 1.8 },
+    ],
+    choices: [
+      { label: 'Go to bed', to: 'Uyu' },
+      { label: 'Go outside', to: 'Gece- dışarı çık' },
+    ],
+  },
+  'Uyu': {
+    type: 'cutscene', art: 'nightmare',
+    lines: [
+      { text: 'You crawl into bed and try to sleep.', hold: 1.6 },
+      { text: 'But every time you close your eyes, that field is there. Waiting.', hold: 2.4 },
+      { text: "You're scared. You don't want to stay in this house.", hold: 1.6 },
+    ],
+    choices: [{ label: 'Go out for some air', to: 'Gece- dışarı çık' }],
+  },
+  'Patates topla': {
+    type: 'cutscene', art: 'potatoNight',
+    lines: [
+      { text: 'You pick potatoes. One, two, ten, fifty... This game is so relaxing.', hold: 2 },
+      { text: 'The hours fly by. Outside, the sky is getting lighter. The sun is almost up.', hold: 2.2 },
+      { text: 'You yawn... your eyes slowly close. You crawl into bed and fall asleep.', hold: 2.4 },
+    ],
+    choices: [{ label: 'Continue', to: 'Sabah' }],
+  },
+  'Sabah': {
+    type: 'cutscene', art: 'morningPC', effect: 'eyelids',
+    lines: [
+      { text: 'You open your eyes. It feels like a boring day.', hold: 1.6 },
+      { text: 'You turn on the computer, and a job application page pops up.', hold: 1.8 },
+      { text: '"Why not? I could work and earn a little money."', hold: 1.4 },
+    ],
+    choices: [{ label: 'Browse job listings', to: 'İş ara' }],
+  },
+  'İş ara': {
+    art: 'jobBoard',
+    lines: ['The job site loads. Three listings catch your eye.'],
+    choices: [
+      { label: 'Dog Walker – Apply', to: 'Köpek Yürütücü',
+        gate: { karmaAtLeast: 'good' }, gateMsg: "Sorry, we're not accepting new applications right now.", gateShort: 'not accepting applications' },
+      { label: 'Courier – Apply', to: 'Kurye' },
+      { label: 'Night Watchman – Apply', to: 'Gece Bekçisi' },
+    ],
+  },
+  'Köpek Yürütücü': {
+    type: 'cutscene', art: 'jobAd', artOpts: { variant: 'dog' },
+    lines: [
+      { text: 'The Dog Walker listing opens.', hold: 1 },
+      { text: 'We have the sweetest dogs: a pomeranian, a sausage dog, and even a borzoi!', hold: 1.8 },
+      { text: 'Want to have fun AND earn good money? This job is for you. Address: Rua Pedro Ivo, 83.', hold: 1.6 },
+    ],
+    choices: [{ label: 'Go to the interview', to: 'Dog Walker iş - Görüşme' }],
+  },
+  'Kurye': {
+    type: 'cutscene', art: 'jobAd', artOpts: { variant: 'courier' },
+    lines: [
+      { text: 'The Courier listing opens.', hold: 1 },
+      { text: 'Deliver a few packages at night and earn good money. You keep the tips, too!', hold: 1.8 },
+      { text: 'Interview at Liberdade, 43 – São Paulo.', hold: 1.4 },
+    ],
+    choices: [{ label: 'Go to the interview', to: 'Kurye İş - Görüşme' }],
+  },
+  'Gece Bekçisi': {
+    type: 'cutscene', art: 'jobAd', artOpts: { variant: 'watch' },
+    lines: [
+      { text: 'The Night Watchman listing opens.', hold: 1 },
+      { text: 'A condomínio is looking for someone to work the portaria at the front gate.', hold: 1.8 },
+      { text: 'For an interview, come to Rua Osvaldo, 54.', hold: 1.4 },
+    ],
+    choices: [{ label: 'Go to the job interview', to: 'Bekçi iş - Görüşme' }],
+  },
+
+  'Gece- dışarı çık': {
+    type: 'cutscene', art: 'nightStreet',
+    lines: [
+      { text: "You step outside. It's cold and windy, and the street feels... wrong.", hold: 1.8 },
+      { text: 'Something is lying on the sidewalk: a bag. It looks full.', hold: 1.4 },
+    ],
+    choices: [
+      { label: 'Open the bag', to: 'Çantayı aç' },
+      { label: 'Keep walking', to: 'Çantayı açma' },
+    ],
+  },
+  'Çantayı aç': {
+    art: 'pinBox',
+    lines: [
+      "Inside the bag there's a metal box with an electronic pinpad. It's clearly locked.",
+      'Maybe you could guess the code...?',
+    ],
+    choices: [
+      { label: 'Guess the code', luck: { key: 'bag_code', chance: 0.15 }, to: 'Şifre Dogru', failTo: 'şifre yanlış' },
+    ],
+  },
+  'Şifre Dogru': {
+    type: 'cutscene', art: 'boxOpen',
+    lines: [
+      { text: '*beep* *beep* ... CLICK. The box opens!', hold: 1 },
+      { text: 'Inside: a thick stack of cash!', hold: 1.4 },
+      { text: '"With this I can enroll in school again... and finally get into my dream department!"', hold: 1.8 },
+      { text: 'You go home and sleep. The next morning, you head to school.', hold: 2 },
+    ],
+    choices: [{ label: 'Continue', to: 'Okul - Luck' }],
+  },
+  'şifre yanlış': {
+    type: 'cutscene', art: 'boxBroken',
+    lines: [
+      { text: 'ERROR. The pinpad sparks and the box starts to smoke!', hold: 1.6 },
+      { text: 'You drop the bag and keep walking.', hold: 1.4 },
+    ],
+    choices: [{ label: 'Continue', to: 'Çantayı açma' }],
+  },
+  'Çantayı açma': {
+    art: 'nightStreet', artOpts: { variant: 'man' },
+    lines: [
+      'You keep walking. Suddenly, a man steps out of the dark and blocks your way.',
+      { text: 'What are you doing out here at this hour? Empty your pockets!', speaker: 'Stranger', actor: 'Stranger' },
+    ],
+    choices: [
+      { label: 'Resist', to: 'Gece - Sokak Diren' },
+      { label: 'Show your pockets', to: 'Gece - Sokak Direnme' },
+    ],
+  },
+  'Gece - Sokak Diren': {
+    type: 'cutscene', art: 'strangerCard', artOpts: { variant: 'laugh' },
+    lines: [
+      { text: 'The man bursts out laughing.', hold: 1.2 },
+      { text: "You've got guts, I see. I like brave people. You should work for me.", speaker: 'Stranger', hold: 1.6 },
+      { text: "If you don't show up, it'll be bad. I don't like being turned down.", speaker: 'Stranger', hold: 1.6 },
+      { text: 'He hands you his card.', hold: 1.4 },
+      { text: 'You go home and sleep. In the morning, you go to the address on the card.', hold: 2 },
+    ],
+    choices: [{ label: 'Continue', to: 'Kurye İş - Görüşme' }],
+  },
+  'Gece - Sokak Direnme': {
+    type: 'cutscene', art: 'strangerCard', artOpts: { variant: 'smile' },
+    lines: [
+      { text: 'The man smiles.', hold: 1.2 },
+      { text: 'Good. Obedient. Someone like you should work for me.', speaker: 'Stranger', hold: 1.6 },
+      { text: "You're coming to the address on this card tomorrow!", speaker: 'Stranger', hold: 1.6 },
+      { text: 'He hands you his card.', hold: 1.4 },
+      { text: 'You go home and sleep. In the morning, you go to the address on the card.', hold: 2 },
+    ],
+    choices: [{ label: 'Continue', to: 'Kurye İş - Görüşme' }],
+  },
+  'Okul - Luck': {
+    art: 'campus',
+    lines: [
+      { text: 'The teacher greets you with a smile.', actor: 'Teacher:happy' },
+      { text: "I'm so glad you can start classes! Finding a job is so hard these days, you know.", speaker: 'Teacher', actor: 'Teacher:smile' },
+      { text: "We're the best school in the city. I'm sure you'll have a wonderful career. By the way, which department did you enroll in?", speaker: 'Teacher', actor: 'Teacher:smile' },
+    ],
+    choices: [
+      { label: 'Ice Cream Expertise', to: 'Dondurma Uzmanlığı' },
+      { label: 'Traditional Chinese Medicine', to: 'TCM Sınıfı' },
+    ],
+  },
 };
 
 window.START_SCENE = 'Menü';

@@ -18,7 +18,7 @@
     dialog: $('#dialog'), nametag: $('#dialog .nametag'), text: $('#dialog .text'), choices: $('#dialog .choices'),
     invBtn: $('#invBtn'), invIcon: $('#invBtn canvas'), invBadge: $('#invBtn .badge'), inv: $('#inv'), invGrid: $('#inv .inv-grid'),
     invDetail: $('#inv .inv-detail'), invClose: $('#inv .inv-close'), toast: $('#toast'),
-    fade: $('#fade'), card: $('#card'), debug: $('#debug'),
+    fade: $('#fade'), card: $('#card'), debug: $('#debug'), notice: $('#notice'), skip: $('#skipBtn'),
   };
   const SC = window.SCENES, ITEMS = window.ITEMS, D = () => State.data;
   const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -109,6 +109,83 @@
   }
   const visibleChoices = () => (scene.choices || []).filter((c) => Logic.test(c.if));
 
+  /* ---------- luck events + gated choices ----------
+     luck: { key, chance }  -> label shows "– 15% chance"; one roll (1..100, lucky if <= chance%),
+            saved in State.data.luck[key] before anything else, so reloading can't reroll.
+            Lucky -> ch.to.  Unlucky -> ch.failTo if set, else the button stays disabled.
+     gate: condition, gateMsg -> button is shown, but if the condition fails when clicked the
+            message is shown and the button is locked for good (flag 'gate:<scene>=><to>').   */
+  const pctOf = (l) => Math.round(l.chance * 100);
+  function luckMode() { try { return localStorage.getItem('life.debug.luck') || 'random'; } catch (e) { return 'random'; } }
+  function rollLuck(l) {
+    const need = pctOf(l); let roll = 1 + Math.floor(Math.random() * 100);
+    if (DEBUG && luckMode() === 'success') roll = 1 + Math.floor(Math.random() * need);
+    if (DEBUG && luckMode() === 'fail') roll = need + 1 + Math.floor(Math.random() * (100 - need));
+    const r = { roll, need, ok: roll <= need, scene: current };
+    D().luck[l.key] = r; State.save(); return r;
+  }
+  const gateKey = (ch) => 'gate:' + current + '=>' + ch.to;
+  function choiceLabel(ch) {
+    let t = fill(ch.label);
+    if (ch.luck) {
+      const r = D().luck[ch.luck.key];
+      t += r ? (r.ok ? ` – lucky! (rolled ${r.roll})` : ` – unlucky (rolled ${r.roll})`) : ` – ${pctOf(ch.luck)}% chance`;
+    }
+    if (ch.gate && D().flags[gateKey(ch)]) t += ' – ' + (ch.gateShort || 'closed');
+    return t;
+  }
+  function choiceLocked(ch) {
+    if (ch.luck) { const r = D().luck[ch.luck.key]; if (r && !r.ok && !ch.failTo) return true; }
+    if (ch.gate && D().flags[gateKey(ch)]) return true;
+    return false;
+  }
+  async function showNotice(html, cls, ms) {
+    const n = el.notice; n.className = cls || ''; n.innerHTML = html; n.hidden = false;
+    document.body.dataset.notice = cls || 'notice';
+    await new Promise((r) => { const tm = setTimeout(r, FAST ? 60 : ms); n.onclick = (e) => { e.stopPropagation(); clearTimeout(tm); r(); }; });
+    n.hidden = true; n.onclick = null; delete document.body.dataset.notice;
+  }
+  async function luckAnim(r, label) {
+    const n = el.notice; n.className = 'luck'; n.hidden = false; document.body.dataset.notice = 'rolling';
+    n.innerHTML = `<div class="luck-t">${label}</div><div class="luck-n">--</div><div class="luck-s">need ${r.need} or less</div>`;
+    const num = n.querySelector('.luck-n'); const end = performance.now() + (FAST ? 30 : 1500);
+    while (performance.now() < end) { num.textContent = 1 + Math.floor(Math.random() * 100); await sleep(60); }
+    num.textContent = r.roll; n.classList.add(r.ok ? 'ok' : 'bad');
+    n.querySelector('.luck-s').textContent = r.ok ? 'LUCKY!' : 'UNLUCKY...';
+    document.body.dataset.notice = r.ok ? 'lucky' : 'unlucky';
+    await new Promise((res) => { const tm = setTimeout(res, FAST ? 60 : 1600); n.onclick = (e) => { e.stopPropagation(); clearTimeout(tm); res(); }; });
+    n.hidden = true; n.onclick = null; delete document.body.dataset.notice;
+  }
+  let picking = false;
+  async function pickChoice(ch) {
+    if (busy || picking || choiceLocked(ch)) return;
+    if (ch.gate && !Logic.test(ch.gate)) {
+      picking = true; D().flags[gateKey(ch)] = true; State.save();
+      await showNotice(`<p>${ch.gateMsg || 'Not available.'}</p>`, 'gate', 2600); picking = false;
+      rerenderChoices(); return;
+    }
+    if (ch.luck) {
+      picking = true;
+      let r = D().luck[ch.luck.key]; const fresh = !r;
+      if (!r) r = rollLuck(ch.luck);
+      if (fresh) await luckAnim(r, fill(ch.label));
+      picking = false; renderDebug();
+      if (r.ok) return choose(ch);
+      if (ch.failTo) return choose(Object.assign({}, ch, { to: ch.failTo }));
+      rerenderChoices(); return;
+    }
+    return choose(ch);
+  }
+  function choiceBtn(ch, cls, key) {
+    const b = makeBtn(choiceLabel(ch), () => pickChoice(ch), cls + (ch.luck ? ' luck' : ''), key);
+    if (choiceLocked(ch)) { b.disabled = true; b.classList.add('locked'); }
+    return b;
+  }
+  function rerenderChoices() {
+    if (!el.dialog.hidden && document.body.dataset.ready === 'choices') showChoices();
+    else if (!el.cutchoices.hidden) renderCutChoices();
+  }
+
   /* ---------- scene flow ---------- */
   function resolve(id, via) {
     // follow 'branch' scenes to their target; returns final id
@@ -143,13 +220,16 @@
   function hideAll() {
     for (const k of ['menu', 'namecard', 'cuttext', 'cutchoices', 'tbc', 'dialog']) el[k].hidden = true;
     el.cutname.hidden = true; el.dialog.classList.remove('more'); el.choices.innerHTML = ''; el.cutchoices.innerHTML = '';
-    cutFx = null; cv.style.filter = ''; setActor(null); closeInventory();
+    cutFx = null; cv.style.filter = ''; setActor(null); closeInventory(); el.notice.hidden = true;
+    disarmSkip(); skipped = false; skipTok = -1; el.cutchoices.style.removeProperty('--cut-h'); el.cuttext.classList.remove('all'); el.text.classList.remove('all'); delete document.body.dataset.skipped;
     document.body.dataset.ready = '';
   }
   function enter(id, via, opts) {
     current = id; scene = SC[id] || { type: 'tbc' };
     const type = scene.type || 'dialogue';
     art = ART[type === 'tbc' ? 'tbc' : scene.art] || ART.tbc; artOpts = scene.artOpts || {}; t0 = performance.now();
+    if (art && art.reset) art.reset(artOpts);
+    cv.classList.toggle('interactive', !!(art && art.pointer));
     sceneToken++; beat = 0; beatStart = performance.now();
     if (type !== 'menu' && type !== 'action') {
       if (via === 'choice' || via === 'jump') record(id, via);
@@ -217,21 +297,55 @@
     el.dialog.classList.remove('more'); el.choices.innerHTML = '';
     document.body.dataset.line = i; document.body.dataset.ready = '';
     typer = typeInto(el.text, fill(L.text));
-    typer.promise.then(() => { if (i < lines.length - 1) { el.dialog.classList.add('more'); document.body.dataset.ready = 'more'; } else showChoices(); });
+    typer.promise.then(() => { if (skipped) return; if (i < lines.length - 1) { el.dialog.classList.add('more'); document.body.dataset.ready = 'more'; } else showChoices(); });
   }
   function showChoices() {
+    disarmSkip();
     el.choices.innerHTML = '';
     const ch = visibleChoices();
-    ch.forEach((c, i) => el.choices.appendChild(makeBtn(fill(c.label), () => choose(c), 'pbtn', String(i + 1))));
+    ch.forEach((c, i) => el.choices.appendChild(choiceBtn(c, 'pbtn', String(i + 1))));
     if (!ch.length) el.choices.appendChild(makeBtn('Main Menu', () => goTo(window.START_SCENE, { via: 'menu' }), 'pbtn'));
     document.body.dataset.ready = 'choices';
   }
   async function runDialogue(tok) {
     lines = (scene.lines || []).filter((l) => Logic.test(lineObj(l).if));
-    if (scene.delay && !FAST) await sleep(scene.delay * 1000);
-    if (tok !== sceneToken) return;
+    if (scene.cutscene) armSkip(tok);
+    if (scene.delay && !FAST) await Promise.race([sleep(scene.delay * 1000), skipP]);
+    if (tok !== sceneToken || skipped) return;
     el.dialog.hidden = false; lineIdx = 0;
     if (lines.length) showLine(0); else showChoices();
+  }
+
+  /* ---------- Skip (every cutscene) ----------
+     Shows the whole text of the cutscene at once, jumps the animation to its last frame,
+     and stops at the cutscene's choices. Button top-right, or Esc / S.                     */
+  let skipped = false, skipP = Promise.resolve(), skipRes = null, skipTok = -1;
+  function armSkip(tok) {
+    skipped = false; skipTok = tok; skipP = new Promise((r) => (skipRes = r));
+    el.skip.hidden = false; document.body.dataset.skippable = '1';
+  }
+  function disarmSkip() { el.skip.hidden = true; delete document.body.dataset.skippable; }
+  const lineHTML = (L) => { const d = document.createElement('div'); d.className = 'all-line' + (L.speaker ? ' said' : ''); d.textContent = (L.speaker ? L.speaker + ': ' : '') + fill(L.text); return d; };
+  function skipCutscene() {
+    if (el.skip.hidden || skipped || skipTok !== sceneToken || busy) return;
+    skipped = true; disarmSkip();
+    if (typer) typer.finish(); if (cutAdvance) cutAdvance();
+    if (cutFx) cutFx.start = performance.now() - 60000;
+    const type = scene.type || 'dialogue';
+    beat = Math.max(0, lines.length - 1); beatStart = performance.now() - 60000;
+    if (type === 'cutscene') {
+      el.cutname.hidden = true; el.cuttext.hidden = false; el.cuttext.innerHTML = '';
+      el.cuttext.classList.add('all'); lines.forEach((l) => el.cuttext.appendChild(lineHTML(lineObj(l))));
+      document.body.dataset.line = beat; renderCutChoices(); document.body.dataset.ready = 'choices';
+      document.body.dataset.skipped = '1'; el.cutchoices.style.setProperty('--cut-h', (el.cuttext.offsetHeight + 12) + 'px');
+    } else {
+      el.dialog.hidden = false; el.nametag.hidden = true; el.text.classList.add('narration');
+      const last = lineObj(lines[lines.length - 1] || {}); setActor(parseActor(last.actor || (last.speaker && window.ACTORS[last.speaker] ? last.speaker : null)));
+      el.text.innerHTML = ''; el.text.classList.add('all'); lines.forEach((l) => el.text.appendChild(lineHTML(lineObj(l))));
+      lineIdx = lines.length - 1; document.body.dataset.line = lineIdx; showChoices();
+    }
+    document.body.dataset.skipped = '1';
+    if (skipRes) skipRes();
   }
   function advance() {
     if (busy || !scene || !el.inv.hidden) return;
@@ -241,27 +355,41 @@
     if (type === 'dialogue' && lineIdx < lines.length - 1 && !el.dialog.hidden) { lineIdx++; showLine(lineIdx); }
     if (type === 'cutscene' && cutAdvance) cutAdvance();
   }
+  // interactive arts (mini-games) get pointer + key input in 320x180 canvas coordinates
+  const artXY = (e) => { const r = cv.getBoundingClientRect(); return [(e.clientX - r.left) / r.width * 320, (e.clientY - r.top) / r.height * 180]; };
+  cv.addEventListener('pointerdown', (e) => { if (art && art.pointer && !busy) { const [x, y] = artXY(e); if (art.pointer(x, y, e) !== false) { e.preventDefault(); cv.dataset.ate = '1'; } } });
+  cv.addEventListener('click', (e) => { if (cv.dataset.ate) { delete cv.dataset.ate; e.stopPropagation(); } }, true);
   el.dialog.addEventListener('click', advance); cv.addEventListener('click', advance); actorCv.addEventListener('click', advance); el.cuttext.addEventListener('click', advance);
 
   /* ---------- cutscene ---------- */
   async function runCutscene(tok) {
     lines = (scene.lines || []).filter((l) => Logic.test(lineObj(l).if));
-    await sleep(FAST ? 0 : 700);
+    armSkip(tok);
+    await Promise.race([sleep(FAST ? 0 : 700), skipP]);
     for (let i = 0; i < lines.length; i++) {
-      if (tok !== sceneToken) return;
+      if (tok !== sceneToken || skipped) return;
       const L = lineObj(lines[i]); beat = i; beatStart = performance.now(); document.body.dataset.line = i;
       if (L.speaker) { el.cutname.hidden = false; el.cutname.textContent = L.speaker; } else el.cutname.hidden = true;
       typer = typeInto(el.cuttext, fill(L.text), FAST ? CPS : 32);
       await typer.promise;
+      if (skipped) return;
       const hold = FAST ? HOLD : (L.hold || HOLD);
       await new Promise((r) => { const tm = setTimeout(r, hold * 1000); cutAdvance = () => { clearTimeout(tm); r(); }; });
       cutAdvance = null;
     }
-    if (tok !== sceneToken) return;
-    el.cutchoices.hidden = false; el.cutchoices.innerHTML = '';
-    visibleChoices().forEach((ch) => el.cutchoices.appendChild(makeBtn(fill(ch.label), () => choose(ch), 'pbtn pbtn-go')));
+    if (tok !== sceneToken || skipped) return;
+    disarmSkip();
+    renderCutChoices();
     document.body.dataset.ready = 'choices';
   }
+
+  function renderCutChoices() {
+    el.cutchoices.hidden = false; el.cutchoices.innerHTML = '';
+    visibleChoices().forEach((ch) => el.cutchoices.appendChild(choiceBtn(ch, 'pbtn pbtn-go')));
+  }
+
+  el.skip.addEventListener('click', (e) => { e.stopPropagation(); skipCutscene(); });
+  el.skip.addEventListener('pointerdown', (e) => e.stopPropagation());
 
   /* ---------- inventory ---------- */
   let selected = null, confirmFor = null;
@@ -310,11 +438,15 @@
   el.inv.addEventListener('click', (e) => { e.stopPropagation(); if (e.target === el.inv) closeInventory(); });
 
   /* ---------- keyboard ---------- */
+  document.addEventListener('keyup', (e) => { if (art && art.key) art.key(e.key, false); });
   document.addEventListener('keydown', (e) => {
     if (e.target === el.nameInput || (e.target.tagName === 'SELECT')) return;
+    if (e.key === 'Escape' && el.inv.hidden && !el.skip.hidden) { e.preventDefault(); skipCutscene(); return; }
     if (e.key === 'Escape') { closeInventory(); return; }
+    if ((e.key === 's' || e.key === 'S') && el.inv.hidden && !el.skip.hidden) { e.preventDefault(); skipCutscene(); return; }
     if ((e.key === 'i' || e.key === 'I') && !el.invBtn.hidden) { el.inv.hidden ? openInventory() : closeInventory(); return; }
     if (!el.inv.hidden) return;
+    if (art && art.key && art.key(e.key, true) !== false) { e.preventDefault(); return; }
     if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); advance(); }
     const n = parseInt(e.key, 10);
     if (n >= 1 && n <= 9) { const btns = el.dialog.hidden ? [] : el.choices.querySelectorAll('button'); if (btns[n - 1]) btns[n - 1].click(); }
@@ -328,12 +460,13 @@
     el.debug.querySelector('.dbg-stats').innerHTML =
       `<b>scene</b> ${id}<br><b>karma</b> ${d.karma} [${Logic.getKarmaTier()}] (max here ${Logic.maxKarmaAt(d.currentScene || id)})<br>${rels}` +
       `<br><b>chatted w/ Osvaldo</b> ${d.visited.includes('Sohbet et')}<br><b>items</b> ${d.inventory.map((x) => x.id).join(', ') || '-'}` +
+      `<br><b>luck</b> mode=${luckMode()} ${Object.entries(d.luck).map(([k, r]) => `${k}:${r.roll}/${r.need}${r.ok ? '✓' : '✗'}`).join(' ') || '-'}` +
       `<br><b>flags</b> ${Object.keys(d.flags).join(', ') || '-'}<br><b>visited</b> ${d.visited.length}`;
   }
   function setupDebug() {
     if (!DEBUG) return;
     el.debug.hidden = false;
-    const sel = el.debug.querySelector('select');
+    const sel = el.debug.querySelector('.dbg-sel');
     Object.keys(SC).forEach((k) => { const o = document.createElement('option'); o.value = k; o.textContent = k; sel.appendChild(o); });
     const on = (cls, fn) => el.debug.querySelector(cls).addEventListener('click', (e) => { e.stopPropagation(); fn(); renderDebug(); });
     on('.dbg-go', () => { if (!D().name) D().name = 'Tester'; goTo(sel.value, { via: 'jump', applyEffects: el.debug.querySelector('.dbg-fx').checked }); });
@@ -342,6 +475,11 @@
     on('.dbg-km', () => { D().karma -= 5; State.save(); });
     on('.dbg-pebble', () => applyEffects([{ type: 'addItem', item: 'pebble' }]));
     on('.dbg-min', () => el.debug.classList.toggle('min'));
+    const ls = el.debug.querySelector('.dbg-luck'); ls.value = luckMode();
+    ls.addEventListener('change', () => { try { localStorage.setItem('life.debug.luck', ls.value); } catch (e) {} renderDebug(); });
+    on('.dbg-reroll', () => { D().luck = {}; Object.keys(D().flags).forEach((k) => k.startsWith('gate:') && delete D().flags[k]); State.save(); rerenderChoices(); });
+    on('.dbg-kgood', () => { const id = D().currentScene || current; D().karma = Math.ceil(Logic.maxKarmaAt(id) * 0.9); State.save(); });
+    on('.dbg-kbad', () => { D().karma = 0; State.save(); });
     el.debug.addEventListener('click', (e) => e.stopPropagation());
     setInterval(renderDebug, 1000);
   }
@@ -368,7 +506,7 @@
 
   /* ---------- boot ---------- */
   State.load(); Logic.build(); setupDebug();
-  window.Game = { goTo, choose, state: State, logic: Logic, openInventory, closeInventory, applyEffects, get scene() { return current; }, DEBUG, FAST };
+  window.Game = { goTo, choose, pickChoice, skipCutscene, state: State, logic: Logic, openInventory, closeInventory, applyEffects, get scene() { return current; }, DEBUG, FAST };
   const boot = () => { requestAnimationFrame(frame); goTo(window.START_SCENE, { instant: true, via: 'menu' }); };
   if (document.fonts && document.fonts.load) Promise.all([document.fonts.load('16px PS2P'), document.fonts.load('16px Pixelify')]).then(boot, boot); else boot();
 })();

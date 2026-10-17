@@ -50,6 +50,7 @@
     const out = [];
     if (scene.next) out.push({ to: scene.next });
     for (const ch of (scene.choices || [])) if (ch.to) out.push({ to: ch.to, eff: ch.effects });
+    for (const ch of (scene.choices || [])) if (ch.failTo) out.push({ to: ch.failTo, eff: ch.effects });
     for (const b of (scene.branches || [])) out.push({ to: b.to, eff: b.effects });
     return out;
   }

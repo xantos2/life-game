@@ -37,6 +37,8 @@
     <div id="cutname" hidden></div>
     <div id="cuttext" hidden></div>
     <div id="cutchoices" hidden></div>
+    <div id="notice" hidden></div>
+    <button id="skipBtn" type="button" title="Skip (Esc / S)" aria-label="Skip cutscene" hidden>SKIP &#9654;&#9654;</button>
 
     <div id="tbc" class="overlay" hidden>
       <h2 class="tbc-title">To be continued<span class="dots"></span></h2>
@@ -63,6 +65,7 @@
     <div class="dbg-bar"><b>DEBUG</b> <button class="dbg-min" type="button">_</button></div>
     <div class="dbg-stats"></div>
     <div class="dbg-row"><button class="dbg-chat" type="button">toggle chatted</button><button class="dbg-kp" type="button">karma +5</button><button class="dbg-km" type="button">karma -5</button><button class="dbg-pebble" type="button">+pebble</button></div>
+    <div class="dbg-row">luck <select class="dbg-luck"><option value="random">random</option><option value="success">force success</option><option value="fail">force fail</option></select><button class="dbg-reroll" type="button">clear rolls</button><button class="dbg-kgood" type="button">karma good</button><button class="dbg-kbad" type="button">karma 0</button></div>
     <div class="dbg-row"><select class="dbg-sel"></select><button class="dbg-go" type="button">jump</button><label><input type="checkbox" class="dbg-fx"> apply effects</label></div>
   </div>
 
@@ -74,6 +77,7 @@
 <script src="js/logic.js"></script>
 <script src="js/art.js"></script>
 <script src="js/art2.js"></script>
+<script src="js/art3.js"></script>
 <script src="js/actors.js"></script>
 <script src="js/scenes.js"></script>
 <script src="js/engine.js"></script>

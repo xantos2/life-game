@@ -36,7 +36,7 @@ async def settle(pg):
 LABELS = """() => Array.from(document.querySelectorAll('#dialog .choices button, #cutchoices button, #tbc button, #menu button'))
   .filter(b => b.getClientRects().length && !b.closest('[hidden]')).map(b => b.textContent.replace(/^\\d/, '').trim())"""
 
-async def click_label(pg, label):
+async def click_label(pg, label, may_stay=False):
     before = await pg.evaluate('document.body.dataset.scene')
     btns = pg.locator('#dialog .choices button, #cutchoices button, #tbc button, #menu button').filter(has_text=label)
     n = await btns.count(); vis = None
@@ -44,8 +44,21 @@ async def click_label(pg, label):
         if await btns.nth(i).is_visible(): vis = btns.nth(i); break
     if vis is None: raise RuntimeError(f'no button {label!r} in {before}')
     await vis.click()
-    await pg.wait_for_function("(b) => document.body.dataset.scene !== b && document.body.dataset.ready !== 'loading'", arg=before)
+    try:
+        await pg.wait_for_function("(b) => document.body.dataset.scene !== b && document.body.dataset.ready !== 'loading'", arg=before, timeout=4000 if may_stay else 30000)
+    except Exception:
+        if not may_stay: raise
+        return before
     return await pg.evaluate('document.body.dataset.scene')
+
+async def jump(pg, sid, name=None, timeout=10000):
+    """Jump to a scene via the Game API, retrying while a transition is still running."""
+    if name: await pg.evaluate("(n) => { State.reset(); State.data.name = n; State.save(); }", name)
+    for _ in range(int(timeout / 150)):
+        await pg.evaluate("(id) => { Game.goTo(id, {via:'jump'}); }", sid)
+        await pg.wait_for_timeout(150)
+        if await pg.evaluate("(id) => document.body.dataset.scene === id && document.body.dataset.ready !== 'loading'", sid): return
+    raise RuntimeError('jump failed: ' + sid)
 
 async def state(pg): return await pg.evaluate('JSON.parse(JSON.stringify(State.data))')
 
@@ -72,7 +85,7 @@ async def restore(pg, snap, scene):
 async def main():
     async with async_playwright() as p:
         b = await p.chromium.launch()
-        ctx, pg = await new_page(b, BASE + '?fast=1')
+        ctx, pg = await new_page(b, BASE + '?fast=1&debug=1')  # debug: lets the DFS force luck outcomes
 
         # ---------- 1. edge coverage (DFS, each scene expanded once per 'chatted' context) ----------
         await start_new(pg)
@@ -84,12 +97,23 @@ async def main():
             await restore(pg, snap, scene)
             labels = await pg.evaluate(LABELS)
             if await pg.evaluate("document.body.dataset.type") == 'tbc': leaves.add(scene); return
+            meta = await pg.evaluate("(id) => (SCENES[id].choices || []).map(c => [c.label, !!c.luck, !!c.gate])", scene)
             for l in labels:
-                await restore(pg, snap, scene)
-                to = await click_label(pg, l); edges.add((scene, l, to))
-                t = await settle(pg)
-                ns = await state(pg)
-                await dfs(to, ns, depth + 1)
+                m = next((x for x in meta if l.startswith(x[0])), [l, False, False])
+                # luck choices: explore forced success AND forced failure; gated: low and high karma
+                variants = [('luck', 'success'), ('luck', 'fail')] if m[1] else [('karma', 0), ('karma', 'max')] if m[2] else [(None, None)]
+                for kind, v in variants:
+                    sn = json.loads(json.dumps(snap))
+                    if kind == 'luck': await pg.evaluate("(v) => localStorage.setItem('life.debug.luck', v)", v)
+                    if kind == 'karma': sn['karma'] = 0 if v == 0 else await pg.evaluate("(id) => Logic.maxKarmaAt(id)", scene)
+                    await restore(pg, sn, scene)
+                    lab = (await pg.evaluate(LABELS))[labels.index(l)]
+                    to = await click_label(pg, lab, may_stay=True); edges.add((scene, l + (f' [{kind}={v}]' if kind else ''), to))
+                    if to == scene: continue  # gated choice refused (stays on the page)
+                    await settle(pg)
+                    ns = await state(pg)
+                    await dfs(to, ns, depth + 1)
+            await pg.evaluate("localStorage.removeItem('life.debug.luck')")
         snap0 = await state(pg)
         await dfs("Yes, I'm Ready", snap0)
         scenes = await pg.evaluate("Object.keys(SCENES).filter(k => !['menu','action','branch','name'].includes(SCENES[k].type||'dialogue') && k !== 'Continue')")
@@ -98,10 +122,12 @@ async def main():
         # current story graph never allows (author's intent); they are covered by state injection in section 3.
         missing = [s for s in scenes if s not in reached and s not in ('Kavga Et (Osvaldo)', 'Kaç (Osvaldo)')]
         check(not missing, f'unreached scenes: {missing}')
-        check(leaves == {'Dondurma Sınıfı', 'TCM Sınıfı', 'Gece - bilgisayarı aç', 'Gece- dışarı çık'}, f'tbc leaves {leaves}')
+        check(leaves == {'Dondurma Sınıfı', 'TCM Sınıfı', 'Dog Walker iş - Görüşme', 'Kurye İş - Görüşme', 'Bekçi iş - Görüşme'}, f'tbc leaves {leaves}')
+        check(any(e[0] == 'İş ara' and e[2] == 'İş ara' for e in edges) and any(e[0] == 'İş ara' and e[2] == 'Köpek Yürütücü' for e in edges), 'dog walker gate refused at low karma, accepted at max karma')
         print(f'edges exercised: {len(edges)}, scenes reached: {len(reached)}/{len(scenes)}')
         with open(os.path.join(OUT, 'edges.txt'), 'w') as f:
             for e in sorted(edges): f.write(' | '.join(e) + '\n')
+        await ctx.close(); ctx, pg = await new_page(b, BASE + '?fast=1')
 
         # ---------- 2. specific paths & effects ----------
         await start_new(pg)
@@ -213,6 +239,136 @@ async def main():
         await click_label(pg, 'Restart')
         s = await state(pg); check(not s['name'] and not s['inventory'] and s['karma'] == 10, f'restart wipes {s}')
         await ctx.close()
+
+        # ---------- 7. luck event (forced via debug, no reroll, persisted) ----------
+        lctx, lp = await new_page(b, BASE + '?fast=1&debug=1')
+        async def to_bag(mode):
+            await lp.evaluate("(m) => localStorage.setItem('life.debug.luck', m)", mode)
+            await jump(lp, 'Gece- dışarı çık', 'Lucky')
+            await settle(lp); await click_label(lp, 'Open the bag'); await settle(lp)
+        await to_bag('success')
+        lab = (await lp.evaluate(LABELS))[0]
+        check('15% chance' in lab, f'luck label shows chance: {lab}')
+        await lp.screenshot(path=os.path.join(OUT, 'luck_before.png'))
+        to = await click_label(lp, 'Guess the code'); await settle(lp)
+        s = await state(lp)
+        check(to == 'Şifre Dogru' and s['luck']['bag_code']['ok'] and s['luck']['bag_code']['roll'] <= 15, f'forced success -> {to} {s["luck"]}')
+        s2 = await play(lp, ['Continue'])
+        check(await lp.evaluate('document.body.dataset.scene') == 'Okul - Luck', 'success -> Okul - Luck')
+        await lp.screenshot(path=os.path.join(OUT, 'okul_luck.png'))
+        await play(lp, ['Ice Cream Expertise']); check(await lp.evaluate('document.body.dataset.scene') == 'Dondurma Uzmanlığı', 'Okul - Luck -> Dondurma Uzmanlığı')
+        await to_bag('fail')
+        to = await click_label(lp, 'Guess the code'); await settle(lp)
+        s = await state(lp)
+        check(to == 'şifre yanlış' and not s['luck']['bag_code']['ok'] and s['luck']['bag_code']['roll'] > 15, f'forced fail -> {to} {s["luck"]}')
+        roll = s['luck']['bag_code']['roll']
+        await play(lp, ['Continue']); check(await lp.evaluate('document.body.dataset.scene') == 'Çantayı açma', 'fail -> Çantayı açma')
+        # no reroll: reload, switch debug to force success, go back to the box -> still unlucky, same roll
+        await lp.reload(); await lp.wait_for_function("document.body.dataset.ready === 'choices'")
+        await lp.evaluate("localStorage.setItem('life.debug.luck', 'success')")
+        await lp.evaluate("Game.goTo('Çantayı aç', {via:'resume'})"); await lp.wait_for_function("document.body.dataset.scene === 'Çantayı aç'"); await settle(lp)
+        lab = (await lp.evaluate(LABELS))[0]
+        check('unlucky' in lab and str(roll) in lab, f'persisted roll shown after reload: {lab}')
+        await lp.screenshot(path=os.path.join(OUT, 'luck_persisted.png'))
+        to = await click_label(lp, 'Guess the code'); s = await state(lp)
+        check(to == 'şifre yanlış' and s['luck']['bag_code']['roll'] == roll, f'no reroll after reload ({to})')
+        # roll animation visible (normal speed)
+        await lp.goto(BASE + '?debug=1'); await lp.wait_for_function("document.body.dataset.ready === 'choices'")
+        await lp.evaluate("localStorage.setItem('life.debug.luck', 'fail'); State.reset(); State.data.name='R'; State.save(); Game.goTo('Çantayı aç', {via:'jump'})")
+        await lp.wait_for_function("document.body.dataset.scene === 'Çantayı aç'", timeout=20000); await settle(lp)
+        await lp.locator('#dialog .choices button').first.click(); await lp.wait_for_function("document.body.dataset.notice === 'unlucky'", timeout=5000)
+        await lp.screenshot(path=os.path.join(OUT, 'luck_roll_unlucky.png'))
+        check(await lp.is_visible('#notice'), 'roll result shown on screen')
+        await lp.wait_for_function("document.body.dataset.scene === 'şifre yanlış'", timeout=8000)
+        # random mode (no debug): one roll, stored, routed by result
+        await lp.goto(BASE + '?fast=1'); await lp.wait_for_function("document.body.dataset.ready === 'choices'")
+        await jump(lp, 'Çantayı aç', 'Rnd'); await settle(lp)
+        to = await click_label(lp, 'Guess the code'); s = await state(lp); r = s['luck']['bag_code']
+        check(to == ('Şifre Dogru' if r['ok'] else 'şifre yanlış') and (r['roll'] <= 15) == r['ok'], f'random roll {r} -> {to}')
+        await lctx.close()
+
+        # ---------- 8. dog walker gate (karma tier) ----------
+        gctx, gp = await new_page(b, BASE + '?fast=1')
+        for karma_mode in ('low', 'good'):
+            await jump(gp, 'İş ara', 'Job'); await settle(gp)
+            if karma_mode == 'low': await gp.evaluate("State.data.karma = 2; State.save()")
+            else: await gp.evaluate("State.data.karma = Math.ceil(Logic.maxKarmaAt('İş ara') * 0.7); State.save()")
+            tier = await gp.evaluate("Logic.getKarmaTier()")
+            to = await click_label(gp, 'Dog Walker', may_stay=True)
+            if karma_mode == 'low':
+                check(to == 'İş ara' and tier in ('catastrophic', 'bad', 'neutral'), f'low karma ({tier}) refused: {to}')
+                txt = await gp.text_content('#notice') if await gp.is_visible('#notice') else ''
+                await gp.wait_for_timeout(200)
+                labs = await gp.evaluate(LABELS)
+                dis = await gp.evaluate("Array.from(document.querySelectorAll('#dialog .choices button')).map(b => b.disabled)")
+                check(dis == [True, False, False] and 'not accepting' in labs[0], f'dog walker locked, others open: {labs} {dis}')
+                await gp.screenshot(path=os.path.join(OUT, 'jobs_rejected.png'))
+                await gp.reload(); await gp.wait_for_function("document.body.dataset.ready === 'choices'"); await click_label(gp, 'Start'); await settle(gp)
+                dis = await gp.evaluate("Array.from(document.querySelectorAll('#dialog .choices button')).map(b => b.disabled)")
+                check(dis == [True, False, False], f'rejection persisted after reload {dis}')
+                to = await click_label(gp, 'Courier'); check(to == 'Kurye', 'courier still available')
+            else:
+                check(to == 'Köpek Yürütücü' and tier in ('good', 'very good'), f'good karma ({tier}) accepted: {to}')
+                await settle(gp); to = await click_label(gp, 'Go to the interview'); check(to == 'Dog Walker iş - Görüşme', 'dog walker -> TBC interview')
+        await gctx.close()
+
+        # ---------- 9. farm mini-game (mouse, keyboard, touch) ----------
+        async def farm_check(page, label, tap):
+            await jump(page, 'Oyun oyna', 'Farmer'); await settle(page)
+            st = await page.evaluate("JSON.parse(JSON.stringify({px: FarmGame.state.px, t: FarmGame.state.tomatoes, p: FarmGame.state.potatoes, c: FarmGame.state.crops.map(c => [c.kind, c.x, c.y])}))")
+            box = await page.locator('#cv').bounding_box()
+            def at(x, y): return box['x'] + (58 + x) / 320 * box['width'], box['y'] + (10 + y) / 180 * box['height']
+            tom = next(cr for cr in st['c'] if cr[0] == 'tomato'); pot = next(cr for cr in st['c'] if cr[0] == 'potato')
+            for cr in (tom, pot):
+                x, y = at(cr[1], cr[2])
+                if tap: await page.touchscreen.tap(x, y)
+                else: await page.mouse.click(x, y)
+                await page.wait_for_timeout(2600)
+            st2 = await page.evaluate("({t: FarmGame.state.tomatoes, p: FarmGame.state.potatoes, clicks: FarmGame.state.clicks, scene: document.body.dataset.scene})")
+            check(st2['t'] >= 1 and st2['p'] >= 1 and st2['scene'] == 'Oyun oyna', f'{label}: picked crops {st2}')
+            return st2
+        fctx, fp = await new_page(b, BASE + '?fast=1')
+        await farm_check(fp, 'mouse', False)
+        x0 = await fp.evaluate('FarmGame.state.px')
+        await fp.keyboard.down('ArrowLeft'); await fp.wait_for_timeout(500); await fp.keyboard.up('ArrowLeft')
+        x1 = await fp.evaluate('FarmGame.state.px'); check(x1 < x0 - 5, f'keyboard walk {x0} -> {x1}')
+        await fp.screenshot(path=os.path.join(OUT, 'farm_game.png'))
+        to = await click_label(fp, 'Pick tomatoes'); check(to == 'Domates topla', 'farm -> Domates topla')
+        await fctx.close()
+        tctx, tp = await new_page(b, BASE + '?fast=1', vp=(390, 844), mobile=True)
+        await farm_check(tp, 'touch', True)
+        await tp.screenshot(path=os.path.join(OUT, 'mobile_farm.png'))
+        await tctx.close()
+
+        # ---------- 10. Skip on every cutscene ----------
+        sctx, sp = await new_page(b, BASE)
+        cuts = await sp.evaluate("Object.keys(SCENES).filter(k => SCENES[k].type === 'cutscene' || SCENES[k].cutscene)")
+        how = ['click', 'Escape', 's']
+        for i, cs in enumerate(cuts):
+            await jump(sp, cs, 'Skipper')
+            await sp.wait_for_function("(id) => document.body.dataset.scene === id && document.body.dataset.skippable === '1'", arg=cs, timeout=10000)
+            await sp.wait_for_timeout(250)
+            vis = await sp.is_visible('#skipBtn'); check(vis, f'skip visible in {cs}')
+            m = how[i % 3]
+            if m == 'click': await sp.click('#skipBtn')
+            else: await sp.keyboard.press(m)
+            try: await sp.wait_for_function("document.body.dataset.ready === 'choices'", timeout=1200); ok = True
+            except Exception: ok = False
+            info = await sp.evaluate("""(id) => { const S = SCENES[id]; const want = (S.lines || []).filter(l => Logic.test((typeof l === 'string' ? {text:l} : l).if)).length;
+              const box = S.type === 'cutscene' ? document.querySelector('#cuttext') : document.querySelector('#dialog .text');
+              const btns = Array.from(document.querySelectorAll(S.type === 'cutscene' ? '#cutchoices button' : '#dialog .choices button')).filter(b => b.getClientRects().length).length;
+              return { scene: document.body.dataset.scene, shown: box.querySelectorAll('.all-line').length, want, btns, skipHidden: document.querySelector('#skipBtn').hidden }; }""", cs)
+            check(ok and info['scene'] == cs and info['shown'] == info['want'] and info['btns'] >= 1 and info['skipHidden'], f'skip ({m}) {cs}: {info}')
+            if cs in ('Gece - Sokak Diren', 'Domates topla', 'Kaç (Osvaldo)'): await sp.screenshot(path=os.path.join(OUT, f'skip_{cuts.index(cs)}.png'))
+        await sctx.close()
+        mctx2, mp2 = await new_page(b, BASE, vp=(390, 844), mobile=True)
+        await mp2.evaluate("State.data.name='Tap'; Game.goTo('Kavga Et (Osvaldo)', {via:'jump'})"); await mp2.wait_for_function("document.body.dataset.skippable === '1'")
+        await mp2.wait_for_timeout(300); bb = await mp2.locator('#skipBtn').bounding_box()
+        await mp2.touchscreen.tap(bb['x'] + bb['width'] / 2, bb['y'] + bb['height'] / 2)
+        try: await mp2.wait_for_function("document.body.dataset.ready === 'choices' && document.body.dataset.scene === 'Kavga Et (Osvaldo)'", timeout=1500); ok = True
+        except Exception: ok = False
+        check(ok, 'skip works with touch on mobile'); await mp2.screenshot(path=os.path.join(OUT, 'mobile_skip.png'))
+        await mctx2.close()
 
         # ---------- 6. mobile ----------
         mctx, mp = await new_page(b, BASE + '?fast=1', vp=(390, 844), mobile=True)

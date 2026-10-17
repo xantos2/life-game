@@ -6,7 +6,7 @@ Plain HTML/CSS/JS, no build step. All art is procedural pixel art drawn on a 320
 scaled with `image-rendering: pixelated`; speaking characters are drawn big on a separate 100×140
 canvas. Fonts (Press Start 2P, Pixelify Sans, SIL OFL 1.1) are bundled in `fonts/`.
 
-Story source: `story/demo-v2.twee` (Twine export). `story/demo-v1.twee` is the first demo.
+Story source: `story/demo-v3.twee` (Twine export). `demo-v1.twee` / `demo-v2.twee` are the earlier demos.
 
 ## Files
 | file | what |
@@ -15,10 +15,10 @@ Story source: `story/demo-v2.twee` (Twine export). `story/demo-v1.twee` is the f
 | `js/state.js` | save data (`localStorage` key `life.save.v2`, migrates `life.save.v1`) |
 | `js/logic.js` | hidden karma / relationship tiers (`TIER_CONFIG`), conditions |
 | `js/engine.js` | scene flow, typing, fades, cutscenes, talk layout, inventory, debug overlay |
-| `js/art.js`, `js/art2.js` | backgrounds + cutscene animations (`ART.*`) |
-| `js/actors.js` | big speaking characters (`ACTORS.Osvaldo/Samara/Teacher/Nurse/Knife Man/Police`) |
+| `js/art.js`, `js/art2.js`, `js/art3.js` | backgrounds + cutscene animations (`ART.*`); art3 = the night, computer screens, farm mini-game |
+| `js/actors.js` | big speaking characters (`ACTORS.Osvaldo/Samara/Teacher/Nurse/Knife Man/Police/Stranger`) |
 | `tools/twee_import.py` | twee → report of passages, links, button texts, effect hints, missing scenes; `--skeleton` |
-| `tools/shoot.py` | Playwright verification (all edges, effects, branches, inventory, migration, mobile) |
+| `tools/shoot.py` | Playwright verification (all edges incl. both luck outcomes and the karma gate, effects, branches, inventory, migration, luck persistence, farm game with mouse/keys/touch, Skip on every cutscene, mobile) |
 | `tools/gallery.py` | screenshot every scene via debug jumps |
 
 ## Systems
@@ -69,6 +69,32 @@ A `type: 'branch'` scene jumps straight to the first matching branch, e.g. `Kavg
 
 **Cutscenes.** `type: 'cutscene'` with `art` that animates per line: the art gets `opts.beat`
 (line index) and `opts.beatT` (seconds into that line). Lines may set `hold` (seconds) and `speaker`.
+
+**Luck events** (twee: *şans eventi*). A choice with `luck` shows its chance on the button
+(`Guess the code – 15% chance`). Clicking rolls **once** (1–100, lucky if ≤ chance), the roll is
+shown on screen and saved in `State.data.luck[key]` *before* anything else, so reloading can't
+reroll. Lucky → `to`; unlucky → `failTo` if given, otherwise the button stays disabled
+(`– unlucky (rolled 62)`) and the player must take another option.
+```js
+{ label: 'Guess the code', luck: { key: 'bag_code', chance: 0.15 }, to: 'Şifre Dogru', failTo: 'şifre yanlış' }
+```
+Debug panel: *luck* = random / force success / force fail, *clear rolls*.
+
+**Gated choices.** Shown, but refused with a message when the condition fails; the refusal is
+remembered (flag `gate:<scene>=><to>`), so the button stays locked:
+```js
+{ label: 'Dog Walker – Apply', to: 'Köpek Yürütücü', gate: { karmaAtLeast: 'good' },
+  gateMsg: "Sorry, we're not accepting new applications right now.", gateShort: 'not accepting applications' }
+```
+Debug panel: *karma good* (90% of the max reachable here) / *karma 0*.
+
+**Interactive arts (mini-games).** An `ART.x` may define `reset(opts)`, `pointer(x, y)` (canvas
+coords 320×180; mouse and touch) and `key(key, down)`. `ART.farmGame` (scene *Oyun oyna*) is the
+Cozy Farm game: click/tap to walk, click crops to pick, arrow keys / WASD; state in `window.FarmGame`.
+
+**Skip.** Every cutscene (`type: 'cutscene'`, or `cutscene: true` on a dialogue scene such as
+*Cutscene - Pre-Hospital*) shows a **SKIP ▶▶** button (or Esc / S). It shows the whole text at once,
+jumps the animation to its last frame and stops at the cutscene's own choices.
 
 **Debug** (`?debug=1`): live karma/relationship values with tiers and reachable ranges, items, flags;
 buttons to toggle "chatted with Osvaldo", karma ±5, +pebble; a jump list of every scene

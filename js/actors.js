@@ -284,8 +284,57 @@
     for (let k = 0; k <= w; k++) for (let a = -3; a <= 3; a++) P(c, '#ffffff', px + 50 + k * 4 + Math.round(Math.cos(a / 4) * 2), py + 10 + a + k * 0);
   }
 
+
+  /* ---------- the stranger in the night street (menacing) ----------
+     expr: menace (default) | laugh | smile                              */
+  function stranger(c, t, expr = 'menace') {
+    const laugh = expr === 'laugh', smile = expr === 'smile';
+    const b = laugh ? (Math.floor(t * 8) % 2) : bobOf(t, 1.6); const X = 0, top = 18 + b;
+    const skin = '#b98563', skinS = '#94654a', hood = '#26232e', hoodL = '#36323f', hoodD = '#17151c';
+    // body: dark hoodie, broad shoulders
+    for (let y = top + 34; y < AH; y++) { const k = y - (top + 34); const w = Math.round(Math.min(78, 50 + k * 0.9)); const x0 = Math.round(50 - w / 2); R(c, hood, x0, y, w, 1); R(c, hoodD, x0, y, 3, 1); R(c, hoodD, x0 + w - 3, y, 3, 1); }
+    R(c, hoodD, 49, top + 40, 2, 60); // zipper
+    for (let y = top + 42; y < AH; y += 4) P(c, '#6a6670', 50, y);
+    // chain necklace
+    for (let i = 0; i <= 14; i++) { const a = Math.PI * (i / 14); P(c, i % 2 ? '#e8c860' : '#b8902e', Math.round(50 - Math.cos(a) * 9), Math.round(top + 37 + Math.sin(a) * 6)); }
+    // hood around head
+    ell(c, hood, 50, top + 15, 19, 21); ell(c, hoodL, 46, top + 8, 10, 8);
+    // face (in shadow)
+    ell(c, skin, 50, top + 18, 12, 14); R(c, skinS, 38, top + 9, 24, 4);
+    c.globalAlpha = 0.6; R(c, '#000000', 38, top + 4, 25, 9); c.globalAlpha = 0.3; R(c, '#000000', 38, top + 13, 25, 6); R(c, '#000000', 38, top + 4, 5, 26); R(c, '#000000', 58, top + 4, 5, 26); c.globalAlpha = 1; // hood shadow
+    for (let i = 0; i < 22; i++) P(c, '#7a5440', 41 + (i * 7) % 18, top + 24 + (i * 5) % 7); // stubble
+    // eyes: narrow, glinting
+    const ey = top + 14;
+    if (laugh) { for (const x of [41, 54]) { P(c, '#1b1416', x, ey + 2); P(c, '#1b1416', x + 1, ey + 1); P(c, '#1b1416', x + 2, ey + 1); P(c, '#1b1416', x + 3, ey + 1); P(c, '#1b1416', x + 4, ey + 2); } }
+    else {
+      for (const x of [41, 54]) { R(c, '#f2e27a', x, ey + 1, 5, 2); R(c, '#7a0a0a', x + 2, ey + 1, 2, 2); R(c, '#1b1416', x - 1, ey, 7, 1); c.globalAlpha = 0.25; R(c, '#f2e27a', x - 1, ey - 1, 7, 5); c.globalAlpha = 1; }
+      if (wrap(t, 2.7) < 0.25) { P(c, '#ffffff', x0g(41), ey + 1); P(c, '#ffffff', 57, ey + 1); }
+      // heavy brows angled down
+      for (let i = 0; i < 6; i++) { P(c, '#1b1416', 40 + i, ey - 2 + Math.round(i / 3)); P(c, '#1b1416', 54 + i, ey - 1 - Math.round(i / 3) + 1); }
+    }
+    // scar over left eye
+    R(c, '#d9a0a0', 43, ey - 4, 1, 9); P(c, '#d9a0a0', 42, ey - 3); P(c, '#d9a0a0', 44, ey + 3);
+    R(c, skinS, 49, ey + 4, 2, 5); P(c, '#6a4434', 48, ey + 8); // nose
+    // mouth
+    const my = top + 27;
+    if (laugh) { R(c, '#3a1414', 44, my - 1, 12, 5); R(c, '#f2eadc', 45, my - 1, 10, 1); P(c, '#ffd23f', 52, my - 1); R(c, '#8a2a2a', 47, my + 2, 6, 2); }
+    else if (smile) { R(c, '#3a1414', 44, my, 12, 1); P(c, '#3a1414', 43, my - 1); P(c, '#3a1414', 56, my - 1); R(c, '#f2eadc', 45, my + 1, 10, 1); P(c, '#ffd23f', 52, my + 1); R(c, '#3a1414', 46, my + 2, 8, 1); }
+    else { R(c, '#3a1414', 44, my + 1, 4, 1); R(c, '#3a1414', 48, my, 8, 1); P(c, '#ffd23f', 53, my + 1); }
+    // cigarette (not while laughing) + smoke
+    if (!laugh) {
+      R(c, '#f2eadc', 55, my + 1, 7, 1); const glow = Math.sin(t * 3) > 0.3; P(c, glow ? '#ff7a2f' : '#c84a1a', 62, my + 1);
+      for (let i = 0; i < 6; i++) { const k = wrap(t * 0.5 + i / 6, 1); c.globalAlpha = 0.5 * (1 - k); disc(c, '#9a96a8', Math.round(63 + Math.sin(k * 6 + i) * 3 + k * 6), Math.round(my - k * 30), 1 + Math.round(k * 2)); }
+      c.globalAlpha = 1;
+    }
+    // laugh: "HA HA"
+    if (laugh && wrap(t, 0.6) < 0.4) { text3(c, '#ffd23f', 'HA', 68, 8, 2); text3(c, '#ffd23f', 'HA', 76, 20, 2); }
+    // menace: pointing finger forward
+    if (!laugh && !smile) { disc(c, skin, 78, top + 62, 5); R(c, skin, 81, top + 58, 6, 3); R(c, hood, 66, top + 52, 12, 10); }
+  }
+  const x0g = (x) => x + 3;
+
   window.ACTORS = {
-    Samara: samara, Osvaldo: osvaldoBig, Teacher: teacher, Nurse: nurse, 'Knife Man': knifeMan, Police: police,
+    Samara: samara, Osvaldo: osvaldoBig, Teacher: teacher, Nurse: nurse, 'Knife Man': knifeMan, Police: police, Stranger: stranger,
   };
   window.ACTOR_SIZE = { w: AW, h: AH };
   window.ActorParts = { samara, osvaldoBig, teacher, nurse, knifeMan, police };

@@ -17,7 +17,8 @@ Conventions (from the author):
   "[[X]] Buton text: Y" (any case, also "Butonda Y yazacak") -> button label hint Y for that link
   Twee escapes in passage names ("\\ " leading space, "\\[" ...) are unescaped,
   so ":: \\ Hediyeyi Reddet" becomes the scene key " Hediyeyi Reddet" (leading space kept).
-  Lines with "karma", "relationship"/"ilişki", "item"/"envanter" are reported as hidden-effect hints.
+  Lines with "karma", "relationship"/"ilişki", "item"/"envanter" are reported as hidden-effect hints;
+  "Şans eventi" / "%15 ihtimal" lines too (implement those as a luck choice, see README).
 
 scenes.js may contain engine-only sub-scenes such as "Kavga Et (Osvaldo)" (targets of a
 type:'branch' scene); they are listed separately and are not errors.
@@ -26,8 +27,8 @@ import json, re, sys, os
 
 HEADER = re.compile(r'^::\s*(?P<name>.*?)\s*(?:\[(?P<tags>[^\]]*)\])?\s*(?P<meta>\{.*\})?\s*$')
 LINK = re.compile(r'\[\[(.+?)\]\]')
-BUTTON = re.compile(r'\[\[(.+?)\]\][^\[]*?(?:buton\s*text\s*:\s*(?P<a>[^\[\n]+)|butonda\s+(?P<b>.+?)\s+yazacak)', re.I)
-EFFECT = re.compile(r'karma|relationship|ili[şs]ki|item|envanter', re.I)
+BUTTON = re.compile(r'\[\[(.+?)\]\][^\[]*?(?:buton\s*(?:text)?\s*:\s*(?P<a>[^\[\n]+)|butonda\s+(?P<b>.+?)\s+yazacak)', re.I)
+EFFECT = re.compile(r'karma|relationship|ili[şs]ki|item|envanter|şans eventi|%\s*\d+\s*ihtimal', re.I)
 unescape = lambda n: re.sub(r'\\(.)', r'\1', n)
 SPECIAL = {'StoryTitle', 'StoryData'}
 

@@ -13,6 +13,7 @@
     visited: [],            // scene ids ever entered
     visits: {},             // scene id -> count
     choices: [],            // ["from => to", ...]
+    luck: {},               // luck-event rolls: { key: { roll, need, ok, scene } } (never rerolled)
     currentScene: null, updated: 0,
   });
 
@@ -20,7 +21,7 @@
   function migrate(old) {
     const d = fresh();
     if (!old || typeof old !== 'object') return d;
-    if (old.version === VERSION) return Object.assign(d, old);
+    if (old.version === VERSION) { const m = Object.assign(d, old); if (!m.luck || typeof m.luck !== 'object') m.luck = {}; return m; }
     d.name = typeof old.name === 'string' ? old.name : '';
     d.currentScene = typeof old.currentScene === 'string' ? old.currentScene : null;
     d.visited = Array.isArray(old.visited) ? old.visited.slice() : [];

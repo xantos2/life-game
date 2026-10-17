@@ -1,0 +1,566 @@
+:: StoryTitle
+Demo Game
+
+
+:: StoryData
+{
+  "ifid": "21AE299E-BFDA-45DF-8AF9-6AAF414F260A",
+  "format": "Harlowe",
+  "format-version": "3.3.9",
+  "start": "Menü",
+  "tag-colors": {
+    "NOT": "blue",
+    "Cutscene": "green",
+    "Character": "blue",
+    "Eşya": "purple"
+  },
+  "zoom": 1
+}
+
+
+:: \ Hediyeyi Reddet {"position":"850,1025","size":"100,100"}
+Osvaldo biraz üzülmüş gibi görünür ve uyumaya devam eder.
+
+[[İlerle]]  Buton Text: Devam et
+
+
+:: Abartılı analiz {"position":"625,1850","size":"100,100"}
+Oyuncu dilden yola çıkarak analiz eder, öğretmen çok şaşırır, bazıları doğru bazılarını hiç tahmin bile etmezdim der. Artık sınıfına git, gecikme der. 
+
+[[TCM Sınıfı]] buton text: sınıfa git
+
+Karma puanı 3 artar
+
+
+:: Açıkcası ben seni hiç özlemedim {"position":"675,1275","size":"100,100"}
+Samaranın yüzü düşer, mutsuz görünür. 
+
+"Neden böyle diyorsun? Biz çok iyi arkadaş değil miyiz? Seni üzecek bir şey mi yaptım?"
+
+[[Herkesle görüşmek zorunda mıyım? Sana hesap mı vereceğim?]]
+[[Ben öyle uygun gördüm]]
+
+Oyuncu karma puanı: -5 düşer
+
+
+:: Bekçi iş - Görüşme {"position":"1250,1850","size":"100,100"}
+
+
+
+:: Ben öyle uygun gördüm {"position":"775,1450","size":"100,100"}
+Samara şaşırır, yüzünde şaşkınlık ifadesi belirir. 
+
+"Peki öyleyse, umarım tekrar görüşürüz. Seni yanlış tanımışım galiba..." 
+
+[[İlerle 1]] (Butonda devam et yazacak, ingilizce tabi)
+
+Oyuncu karma puanı -5 düşer
+
+
+:: Continue [Cutscene] {"position":"550,650","size":"100,100"}
+Bir cutscene olacak, yavaş yavaş gözünü açan bir karakterin pov'undan. Typing efektli, pixel art text geçerken karakterin gözü yavaşça açılacak ve etrafı cıvıl cıvıl görecek, gökyüzü parlak, güneş parlıyor, kuşlar uçuyor. Metinler parça parça geçsin, ingilizceye çevrilsin tabi. 
+
+"Günaydın (isim)"
+"Bugün güzel bir gün olacağa benziyor"
+"Hazırsan başlayalım"
+
+[[Yes, I'm Ready]]
+
+
+
+:: Cutscene - Pre-Hospital [Cutscene] {"position":"50,1525","size":"100,100"}
+Karakterin gözleri yavaşça açılır, bir hastane odasındadır. Yatakta yatıyordur. 
+
+Bir hemşire belirir.
+
+"İyi misiniz (isim)? Sonunda uyanabildiniz. Üç gündür bilinciniz kapalı. bıçaklayanı yakalayamadılar, sokakta dikkatli olmanızı tavsiye ederim. Hastaneden çıkışınızı hemen yapabiliriz."
+
+[[Hastaneden Çık]] buton text: taburcu ol
+
+
+:: Defol git, aptal herif! {"position":"200,1000","size":"100,100"}
+Osvaldo ağlar ve başını ellerinin arasına koyar, üzülür. 
+
+[[İlerle]] Button text: Devam et
+
+Oyuncu karma puanı: -10
+Osvaldo ilişki: -10 puan
+
+
+:: Dil göster {"position":"500,1700","size":"100,100"}
+Öğretmen dilini çıkarır. 
+
+[[Doğru analiz]] Buton text: Bildiğin kadarıyla anlat
+[[Abartılı analiz]] Buton text: Bildiğin kadarıyla anlat ama biraz abart
+[[Uydur]] Buton text: Bir şeyler uydur 
+
+
+:: Dog Walker iş - Görüşme {"position":"1350,1850","size":"100,100"}
+
+
+
+:: Domates - Confirm [Cutscene] {"position":"1350,1250","size":"100,100"}
+Cutscene girer.
+Bir kez daha şimşek çakar ve bilgisayar ekranından dumanlar çıkmaya başlar. Bilgisayar bozulmuştur, açılmaz. Evde elektrikler de gittiği için iki seçenek vardır. 
+
+[[Uyu]]Buton text: Yatağa git
+[[Gece- dışarı çık]] Buton text: Dışarı çık
+
+
+:: Domates topla {"position":"1225,1250","size":"100,100"}
+Domates butonuna tıkladığında dışarıda bir gök gürültüsü duyar. Anlık olarak her yer kararır, bir çift korkunç, kırmızı göz anlık olarak görünür. Tekrar oyun belirir. Bu defa oyundaki tarla çok korkunç bir hal almıştır, ürkütücü figürler ve cesetler vardır. Oyuncuya tekrar bir seçim sunulur. Emin misin?
+
+[[Domates - Confirm]] Buton text: Eminim, domates topla
+[[Patates topla]] Buton text: Patates topla
+
+
+:: Dondurma Sınıfı {"position":"500,2025","size":"100,100"}
+
+
+
+:: Dondurma Uzmanlığı {"position":"200,1550","size":"100,100"}
+Öğretmen gülümser.
+
+"Ne kadar güzel, hemen ilerideki kapı, ikinci katta. Sınıfına çabuk git, ilk günden derse geç kalma"
+
+[[Dondurma Sınıfı]] (Butonda sınıfa git yazsın)
+
+
+:: Doğru analiz {"position":"500,1850","size":"100,100"}
+Oyuncu dilden yola çıkarak analiz eder, öğretmen çok teşekkür eder. Çoğu şeyin doğru çıktığını söyler. Mutludur. Artık derse git gecikme de.r 
+
+[[TCM Sınıfı]] buton text: Sınıfa git
+
+Karma puanı: +5 artar
+
+
+
+:: Envanter ve eşya kuralları [NOT] {"position":"275,150","size":"100,100"}
+Bazı kararlar sonucu envantere eşya ekleniyor. Bu eşyalar, hikayede bazı noktalarda ilerleyiş sağlıyor. Bölümlerde "eğer eşya x bulunuyorsa bu seçenek görünsün" gibi notlarım olursa dikkat et. Her eşya hikayeye etki edecek. 
+
+
+:: Eve gidip dinlen {"position":"900,1600","size":"100,100"}
+Karakter evine döner, gözlerini kapatır uyur, bir süre sonra uyanır. gece vaktidir. 
+
+[[Gece- dışarı çık]] Buton text: Dışarı çık
+[[Gece - bilgisayarı aç]] Buton text: Bilgisayarı aç
+
+
+:: Gece - Sokak Diren [Cutscene] {"position":"775,2025","size":"100,100"}
+Adam kahkaha atar.
+
+"Çok cesursun bakıyorum. Severim cesur insanları. Yanımda çalışman lazım. Eğer gelmezsen kötü olur, reddedilmeyi sevmem." der ve kartını uzatır. 
+
+Oyuncu eve döner, uyur ve sabah uyanınca karttaki adrese gider.
+
+[[Kurye İş - Görüşme]] 
+
+
+:: Gece - Sokak Direnme [Cutscene] {"position":"875,2025","size":"100,100"}
+Adam gülümse
+
+"Güzel, itaatkarsın. Senin gibi birinin yanımda çalışması lazım. Karttaki adrese yarın geliyorsun!" der ve kart uzatır. 
+
+Oyuncu eve gider, uyur, sabah karttaki adrese gider. 
+
+[[Kurye İş - Görüşme]] 
+
+
+:: Gece - bilgisayarı aç {"position":"975,1400","size":"100,100"}
+Oyuncu bilgisayarı açar. ne yapsam diye düşünür. 
+
+[[Oyun oyna]] Buton text: oyun oyna
+[[İş ara]] Buton text: iş ara 
+
+
+
+:: Gece Bekçisi [Cutscene] {"position":"1250,1750","size":"100,100"}
+Gece bekçisi ilanının detayları ekranda belirir.
+
+Condomio'da kapıda portaria gibi çalışacak eleman aranıyor, görüşmek için Rua osvaldo, 54 numaraya gelin. 
+
+[[Bekçi iş - Görüşme]] Buton Text: İş görüşmesine git
+
+
+:: Gece- dışarı çık [Cutscene] {"position":"1000,1750","size":"100,100"}
+Dışarı çıkar. Hava soğuk, rüzgarlı ve sokak ürkütücüdür. Yolda bir çanta görür. İçi dolu gibi görünüyordur. 
+
+[[Çantayı aç]] Buton: Çantayı aç
+[[Çantayı açma]] Buton: Yürümeye devam et
+
+
+:: Geleneksel Çin Tıbbı {"position":"500,1600","size":"100,100"}
+Öğretmen gülümser.
+
+"Çok iyi! Ben de hep bu alanı merak etmiştim ama maalesef çok zor geldiği için hiç çalışmam olmadı. Umarım sen çok başarılı olursun da bana da yardım edersin, istersen dilimi göstereyim, bir analiz yap hemen"
+
+[[Dil göster]] (Buton yazısı: Tabi, dilinizi gösterin)
+[[TCM Sınıfı]] (Buton yazısı: Henüz o kadar tecrübem yok, sınıfa gitsem iyi olacak)
+
+
+
+:: Görmezden gel {"position":"550,1025","size":"100,100"}
+Karakter hızlı bir şekilde yürür, Osvaldo'yu görmezden gelir. 
+Yeni sahnede sokağın sonuna ulaşır, burada kavga eden iki kişi görür. 
+
+[[İlerle]]
+[[Müdahale et]]
+[[Polisi ara]]
+
+
+
+
+:: Hastaneden Çık {"position":"775,1600","size":"100,100"}
+Hastaneden çıkar, okula gitmesi gerektiğini hatırlar.
+
+[[Okula Git]] - Buton text: Okula git
+[[Eve gidip dinlen]] Buton text: Eve git
+
+
+:: Hatırlamıyorum {"position":"350,1600","size":"100,100"}
+Öğretmen şaşırır ve sinirlenir. 
+
+"Hatırlamıyor musun? Şaka mı yapıyorsun yoksa gerçekten mi? Eğer dalga geçiyorsan hiç komik değil. Burası ciddi bir kurum!" 
+
+[[Dondurma Uzmanlığı]] Buton text: Özür dilerim, şaka yapmıştım. Dondurma Uzmanlığı
+[[Geleneksel Çin Tıbbı]] Buton text: Özür dilerim, şaka yapmıştım. Geleneksel Çin Tıbbı.
+[[Okul Drop]] Buton text: Gerçekten hatırlamıyorum, ne bileyim ya!
+
+
+:: Hediyeyi Kabul et {"position":"725,1025","size":"100,100"}
+Karakter hediyeyi kabul eder ve çantasına koyar. Osvaldo iyi şanslar diler, gülümser ve uyumaya devam eder. 
+
+[[İlerle]] Buton text: Devam et
+
+item #1 envantere eklenir. 
+Oyuncu +1 karma puanı eklenir. 
+Osvaldo ilişki: +5 puan
+
+
+:: Herkesle görüşmek zorunda mıyım? Sana hesap mı vereceğim? {"position":"650,1450","size":"100,100"}
+Samara çok üzgün bir surat ifadesi takınır ve ağlamaya başlar.
+
+"Seni gerçekten böyle tanımamıştım, neden bana böyle davranıyorsun? Ben senin kaç senelik arkadaşınım. Çok üzdün beni. Sen benim tek arkadaşımdın (isim)
+
+[[İlerle 1]] (Butonda continue yazacak)
+
+Oyuncu karma puanı -5 düşer.
+
+
+:: Kavga Et {"position":"50,1325","size":"100,100"}
+İki seçenekli sahne:
+
+Eğer oyuncu Osvaldo ile sohbet etmeyi tercih etmiş ise:
+
+Osvaldo sahneye girer, bıçaklı adama tokat atar ve kovalamaya başlar. Oyuncu aşağıdaki sahne ile devam eder. (uygun bir cutscene eklensin)
+
+[[İlerle]] 
+
+Eğer oyuncu Osvaldo ile sohbet etmeyi tercih etmemiş ise:
+
+Adam sinirli bir şekilde oyuncuyu bıçaklar.
+
+[[Cutscene - Pre-Hospital]]
+
+
+
+:: Kaç {"position":"175,1325","size":"100,100"}
+Bu sahnede iki seçenek var. 
+
+Eğer oyuncu Osvaldo ile sohbet etmeyi tercih etmiş ise Osvaldo olaya müdahil olur, koşarak adamlara yaklaşır, tehdit eden adama kafa atar. 
+
+Oyuncuya "Ben hallederim, siz gidin" der, sonraki sahneye devam eder. (uygun bir cutscene eklensin)
+
+Eğer oyuncu Osvaldo ile sohbet etmeyi tercih etmemiş ise kaçış cutscene girer ve sonraki sahneye devam eder.
+
+[[İlerle]] 
+
+
+:: Kurye [Cutscene] {"position":"1150,1750","size":"100,100"}
+Kurye ilanının detayları ekranda belirir. 
+
+Geceleri birkaç paket teslimatı yapacaksınız, güzel para kazanabilirsiniz. Bahşişler de sizde kalır. Görüşme yeri Liberdadé, 43 - Sao Paulo. 
+
+[[Kurye İş - Görüşme]] Buton text: Görüşmeye Git
+
+
+:: Kurye İş - Görüşme {"position":"1150,1850","size":"100,100"}
+
+
+
+:: Köpek Yürütücü [Cutscene] {"position":"1350,1750","size":"100,100"}
+Köpek yürütücü ilanının detayları belirir. 
+
+Çok tatlı köpekler var, pomenaraian, sausage dog, hatta borzoi bile var. Hem eğlenmek hem de iyi para kazanmak istiyorsanız bu iş tam da size göre. Adres: Rua Pedro Ivo, 83
+
+[[Dog Walker iş - Görüşme]] Buton text: Görüşmeye git
+
+
+:: Menü {"position":"550,400","size":"100,100"}
+Ana başlangıçta açılacak olan menü. 
+Büyük bir font, hareketli bir logo ile oyunun adı olan "Life" yazacak. 
+Tema çok canlı, güzel ve korkuyu barındırmayan bir şey olmalı. Zamanla korkuya transform olacak. 
+
+Menüde iki seçenek olacak, başla ve sıfırla. Sıfırlaya tıklandığı zaman oyun sıfırlanacak, tekrar baştan karakter oluşturulmaya başlayacak. 
+
+[[Start]]
+[[Restart]] (Bu seçeneğe tıklanırsa oyun baştan başlasın)
+
+
+
+:: Mutlaka görüşelim, şimdi gitmem lazım {"position":"525,1275","size":"100,100"}
+Samara gülümseyerek el sallar. 
+
+[[İlerle 1]]  (Butonda ilerle yazsın, ingilizce)
+
+
+:: Müdahale et {"position":"200,1175","size":"100,100"}
+Karakter korksa da adamları durdurmak için müdahil olur. Lütfen ayrılın, yapmayın, koskoca adamlarsınız hiç yakışıyor mu diye sorar. Adamlardan biri sinirli bir şekilde döner, elinde bıçak vardır. 
+
+"Lan sana mı soracağız! Seni de döverim, saplarım bıçağı konuşma lan" 
+
+[[Kaç]] Buton text: Kaç
+[[Kavga Et]] Buton Text: Asıl ben seni döverim, hıyar 
+
+
+:: No {"position":"550,900","size":"100,100"}
+Karakter kapıdan çıkıyor, sao paulo'ya benzeyen bir sokak var. Yerde bir evsiz yatıyor. Karakterin adı Osvaldo.
+
+Osvaldo:
+
+"Hey, adın ne güzelim? Muhabbet etmek ister misin?"
+
+[[Defol git, aptal herif!]]
+[[Görmezden gel]]
+[[Sohbet et]]
+
+
+:: Okul - Luck {"position":"725,1850","size":"100,100"}
+Öğretmen gülümseyerek karşılar. 
+
+"Derslere başlayabileceğine çok sevindim. Bu dönemde iş bulmak çok zor biliyorsun. Şehirdeki en iyi okul biziz, eminim çok güzel bir kariyer yapacaksın. Bu arada hangi bölüme kaydolmuştun?"
+
+[[Dondurma Uzmanlığı]] Buton text: Dondurma uzmanlığı
+[[TCM Sınıfı]] Buton text: Geleneksel Çin Tıbbı
+
+
+:: Okul Drop {"position":"350,1725","size":"100,100"}
+Öğretmen sinirlenir. 
+
+"Derhal terk et burayı, dalga geçmek hiç hoş değil. Vaktimizi çalma" 
+
+[[Eve gidip dinlen]]  Buton text: Eve git
+
+
+:: Okula Git {"position":"775,1725","size":"100,100"}
+Okula ulaşır, öğretmen kapıda karşılar, yüzü üzgündür.
+
+"İsminiz (isim) değil mi? Başınıza geleni duydum, çok üzgünüm ama maalesef vaktinde derslere başlayamadınız. Her ne kadar bir sağlık durumu, zorunluluk olsa da kurallar böyle. Seneye tekrar sınava girip üniversiteye başlayabilirsiniz" 
+
+[[Eve gidip dinlen]] buton text: Eve git 
+
+
+:: Osvaldo [Character] {"position":"400,275","size":"100,100"}
+Evsiz, sokakta yaşayan kirli bir adam. 
+Huysuz ve sinirli bir yüz ifadesi var. Elinde her zaman bir ısırılmış soğan taşıyor. 
+
+
+:: Oyun oyna {"position":"1100,1400","size":"100,100"}
+Oyuncunun ekranında ufak bir oyun belirir. Tıklanabilir bir oyun olsun, basit birkaç kontrolü bulunsun. animal crossings tarzı. Oyunda iki seçenek çıksın karşısına:
+
+[[Domates topla]] Buton: Domates topla
+[[Patates topla]] Buton: Patates topla 
+
+
+:: Oyun/Hikaye Detayları [NOT] {"position":"550,275","size":"100,100"}
+Oyunun teması korku olacak. Bu nedenle atmosfer söylendiği yerde karanlık, söylendiği yerde aydınlık olmalı. 
+
+Her bölümde seçenekler ve detaylar verilecek. 
+
+Aksi söylenmedikçe, Türkçe yazan her şeyi İngilizce'ye çevirmelisin. Tüm oyun ingilizce dilinde olacak ancak ben parçaları Türkçe yazacağım.
+
+Pixel art stilinde olacak, pixel artlar hareketli olursa iyi olur, örneğin yaylansın, sıcak şeylerde duman tütsün vs gibi uygun şeyler istiyorum.
+
+Karakterler konuşurken karakter büyük bir şekilde sol tarafta yer alsın. sağ tarafta büyük bir text box olsun. 
+
+Kullanıcı envanterinde alınan - bulunan eşyalar görünsün. Envantere ulaşmak için de sağ üstte bir buton olsun. Envanterdeki eşyaların üstüne gelindiğinde ve tıklandığında eşyanın açıklaması, adı ve kim tarafından verildiği yazsın. Eğer bir item kullanılırsa envanterden silinecek. Bir de çöpe at butonu olsun, oyuncu çöpe atarsa silinsin. 
+
+Karma puanı: Karma puanı, karakterin seçimlerine göre eklenecek. Karması artı veya eksi olan karakterlerin seçimleri ve açılacak text boxlar ona göre değişecek. Bunları yine ben belirteceğim. Karma puanı oyuncuya görünür olmayacak. Başlangıçta karakter karma puanı +10 puan ile başlasın. Maksimum veya minimum karma puanı sınırı yok (eksiye de düşebilir)
+karma puanının yükseliğine-düşüklüğüne göre beş sınıfa ayır: felaket, kötü, nötr, iyi, çok iyi.
+Sınıflandırmayı bölümde edinilebilen o ana kadarki max karmaya göre belirlersin. 
+
+Relationship: Relationship, oyucunun oyundaki karakterler ile girdiği etkileşimi ifade eder, kullanıcıya görünmez. Karakterler ile olan ilişki oyuncuya açılacak olan seçenekleri belirler. Belirli davranışlarda karakter ilişki puanı artar veya eksilir. Başlangıçta tüm karakterler ile ilişki puanı sıfırdır. (İstisnalar olabilir, bunlar ayrıca belirtilecektir)
+Puanın yüksekliğine göre ilişkileri beş sınıfa böl: felaket, kötü, nötr, iyi, çok iyi
+Sınıflandırmayı bölümde dinilebilen o ana kadarki max ilişkiye göre belirlersin.
+
+Şans eventi: Eğer bölümde şans eventi geçiyorsa, bölümde verilen detaylara göre yüzdesel olarak RNG üzerinden seçeneğin açılıp açılmayacağı belirlenir. Seçeneğin açılıp açılmayacağının şans eseri olacağı oyuncuya ekranda gösterilir. Örneğin "kapıyı aç - %1 ihtimal"  yazar. Random olarak bu ihtimal oyun tarafından test edilir, eğer oyuncu şanslı ise buton aktif olur ve hikayeye oradan devam eder. Eğer şanssız ise tekrar deneme şansı verilmez ve diğer seçenek ile devam etmek zorunda kalır.
+
+
+:: Patates topla [Cutscene] {"position":"1225,1400","size":"100,100"}
+Oyuncunun patates topladığı, keyifle oyun oynadığı bir cutscene girer. Saatler hızlıca geçer, neredeyse güneş doğacaktır. Esner, gözleri yavaş yavaş kapanır, yatağa gider ve uyur. 
+
+[[Sabah]] Buton text: İlerle
+
+
+:: Polisi ara {"position":"850,1275","size":"100,100"}
+Telefonu çıkarır, polisi arar. 
+
+Polis:
+
+"Hemen müdahale etmeye geliyoruz, hiç merak etmeyin" 
+
+[[İlerle]] 
+
+Karaktere +1 karma puanı eklenir. 
+
+
+:: Random Slyvanian Family {"position":"200,800","size":"100,100"}
+Envantere rastgele bir slyvanian family eklenir. 
+
+[[No]] Buton text: devam et.
+Karakter karma puanı 2 artar.
+
+
+:: Restart {"position":"700,525","size":"100,100"}
+
+
+
+:: Sabah [Cutscene] {"position":"1350,1525","size":"100,100"}
+Oyuncu gözünü açar. Sıkıcı bir gün gibi hisseder, bilgisayarı açar, bu sırada bilgisayarda iş başvuru sayfası karşısına çıkar, neden olmasın, çalışıp biraz para kazanabilirim diye düşünür 
+
+[[İş ara]] Buton text: İş ilanlarını incele
+
+
+:: Samara [Character] {"position":"275,275","size":"100,100"}
+Sarı saçlı, güzel bir genç kız. Pozitif ve devamlı gülümsüyor. Kırmızı bir elbisesi var. 
+
+
+:: Sarı Biber {"position":"700,700","size":"100,100"}
+Karakter sarı biberi alır ve çantasına koyar.
+
+[[No]] Buton text: Devam et
+
+Karakter karma puanı 3 artar. 
+
+
+:: Sohbet et {"position":"725,900","size":"100,100"}
+Sohbet etmek için yaklaşıyor karakter, Osvaldo şaşırır. 
+
+"Sana laf atmış gibi oldum, özür dilerim. Genelde insanlar beni görmezden gelirler. Biraz yalnız bir insanım. İlk kez biri insan yerine koydu ve sohbet etti. Sen iyi birisin. Sana bir hediye vermek istiyorum."
+
+[[Hediyeyi Kabul et]] Buton text: Teşekkür ederim, çok naziksin
+[[ Hediyeyi Reddet]] Buton text: Teşekkür ederim ama sende kalsın
+
+Osvaldo küçük bir taş çakış taşı hediye eder (item 1)
+Karaktere +2 karma puanı eklenir. 
+Osvaldo ilişki: +10 puan
+
+
+:: Start {"position":"550,525","size":"100,100"}
+Burada karakter oluşturacağız. 
+
+Doldurulması istenen bir "Name" alanı olsun. Oyunun temasına uygun bir tasarım.
+
+[[Continue]]
+
+
+:: TCM Sınıfı {"position":"600,2025","size":"100,100"}
+
+
+
+:: Uydur {"position":"350,1850","size":"100,100"}
+Oyuncu saçma sapan şeyler söyler, öğretmen biraz şüpheyle yaklaşsa da dediklerine inanır, hatta yaşantısını buna göre değiştireceğini söyleyip teşekkür eder. 
+
+[[TCM Sınıfı]] buton text: sınıfa git
+Karma puanı - 10 azalır
+
+
+:: Uyu [Cutscene] {"position":"1350,1400","size":"100,100"}
+Cutscene girer.
+Oyuncu uyumaya çalışır ama gözünü kapattıkça oyundaki sahneler korkutucu şekilde gözünün önüne gelir. Korkmuştur, evde kalmak istemez.
+
+[[Gece- dışarı çık]] Buton: Hava almaya çık
+
+
+:: Yes, I'm Ready {"position":"550,775","size":"100,100"}
+İlk sahnemiz, karakterimiz gözünü açıyor, bir odada. Sevimli, bir kız çocuğu odası, masada slyvanian families mole set duruyor, birkaç oyuncak var, sarı bir dolma biber plushie yatakta duruyor. 
+
+Seçimi yaptıktan sonra sahne değişiyor.
+
+Text box:
+
+Bugün yanına bir trinket almak ister misin?
+
+[[Sarı Biber]]
+[[Random Slyvanian Family]]
+[[No]]
+
+(Sarı biber türkçe kalsın)
+
+
+:: Çantayı aç {"position":"1000,1850","size":"100,100"}
+Çantanın içinde metal bir kutu vardır, üzerinde bir elektronik pinpad yer alır. Şifreli olduğu bellidir. 
+
+Şans eventi. 
+
+Oyuncuya bir butonla "şifreyi tahmin et - %15 ihtimal" seçeneği sunulur. RNG - %15 ihtimal ile oyuncu [[Şifre Dogru]] bölümü ile devam eder. Eğer doğru tahmin edemezse cutscene girer [[şifre yanlış]]
+
+
+
+:: Çantayı açma {"position":"900,1850","size":"100,100"}
+Karakter yürümeye devam eder. Aniden karşısına bir adam çıkar ve yolunu keser. 
+
+"Ne geziyorsun bu saatte burada? Boşalt bakayım ceplerini!" 
+
+[[Gece - Sokak Diren]] Buton text: Diren
+[[Gece - Sokak Direnme]] Buton text: Ceplerini göster
+
+
+:: İlerle {"position":"550,1150","size":"100,100"}
+Samara yolda karşısına çıkar.
+Sahne: Sokak, hava aydınlık ve her yer pozitif.
+
+Text:
+
+"İçimde tuhaf bir his var. Seni gördüğüme çok sevindim (isim). Çok uzun süre olmuştu görüşmeyeli. Daha sık görüşmeliyiz. Senin yaptığın kurabiyelere bayılıyorum" 
+
+[[Mutlaka görüşelim, şimdi gitmem lazım]]
+[[Açıkcası ben seni hiç özlemedim]]
+
+
+:: İlerle 1 {"position":"400,1400","size":"100,100"}
+Mekan: Üniversite bahçesi. 
+
+Karakter, okuluna gelmiştir. Bugün ilk günüdür. Bir öğretmen sorar:
+
+"Hoşgeldin, sen hangi bölümde öğrenciydin?"
+
+[[Geleneksel Çin Tıbbı]]
+[[Dondurma Uzmanlığı]]
+[[Hatırlamıyorum]]
+
+
+:: İtem #1 - Çakıl Taşı [Eşya] {"position":"400,150","size":"100,100"}
+Ufak, sıradan bir çakıl taşı. 
+
+
+:: İş ara {"position":"1200,1600","size":"100,100"}
+Bilgisayar ekranı görünür, oyuncuya iş seçenekleri çıkar. 
+
+[[Köpek Yürütücü]] Buton Text: Dog Walker - Başvur 
+[[Kurye]] Buton Text: Kurye - Başvur
+[[Gece Bekçisi]] Buton Text: Gece Bekçisi - Başvur
+
+Eğer oyuncu karması iyi ve üzeri ise dog walker başvurusu kabul edilir ve bu yoldan ilerleyebilir. Ancak, eğer karma puanı düşük ise "Şu an yeni başvuru alamıyoruz" diyerek bu yoldan ilerlemesine izin verilmez. 
+
+
+:: Şifre Dogru [Cutscene] {"position":"1100,1950","size":"100,100"}
+Kutu açılır, içinden bir deste para çıkar. Oyuncu mutludur, bununla tekrar okula kaydolabileceğini ve sonunda hayali olan bölüme girebileceğini söyler. Eve döner, uyur, ertesi gün uyanır ve okula gider.
+
+[[Okul - Luck]] Buton text: İlerle
+
+
+:: şifre yanlış [Cutscene] {"position":"1000,1950","size":"100,100"}
+Şifre yanlış girilince cihaz bozulur, dumanlar çıkmaya başlar. Oyuncu çantayı yere bırakır ve yola devam eder. 
+
+[[Çantayı açma]] Buton text: İlerle 
