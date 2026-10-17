@@ -168,6 +168,7 @@
       sparkle(c, 8, 8, 2, '#b8a9cc'); return; }
     if (item.icon === 'pepper') { c.drawImage(PEPPER, 0, 1); return; }
     if (item.icon === 'mole') { mole(c, 8, 15, item, item.small); }
+    if (item.icon === 'pebble') { ell(c, '#6e6e7a', 8, 10, 6, 4); ell(c, '#9a9aa6', 8, 9, 5, 3); R(c, '#c8c8d2', 5, 7, 3, 1); P(c, '#e6e6ee', 5, 7); P(c, '#7e7e8a', 10, 11); P(c, '#7e7e8a', 6, 11); }
   }
 
   /* ---------- people ---------- */
@@ -473,6 +474,8 @@
         R(c, '#e8709e', 204, 102, 70, 2);
         R(c, '#ffffff', 262, 76, 26, 12); R(c, '#e8e2f5', 262, 86, 26, 2); R(c, '#f2eefb', 264, 78, 6, 2);
         R(c, '#ffd6e6', 274, 84, 14, 12);
+        // closed laptop on the bed
+        R(c, '#c9b6ff', 252, 82, 18, 3); R(c, '#a993f0', 252, 85, 18, 1); R(c, '#ffffff', 260, 83, 2, 1);
         R(c, '#c98d5a', 200, 114, 3, 4); R(c, '#c98d5a', 292, 114, 3, 4);
         // bunting
         const flag = ['#ff6b9a', '#ffd23f', '#4dc3ff', '#7ae582', '#b27bff'];
@@ -490,7 +493,26 @@
       dust = []; for (let i = 0; i < 14; i++) dust.push({ x: r(), y: r(), sp: 0.03 + r() * 0.05, ph: r() * 6 });
       ready = true;
     }
-    function draw(c, t) {
+    function nightPass(c, t) {
+      c.globalCompositeOperation = 'multiply'; c.fillStyle = '#4b4f96'; c.fillRect(0, 0, W, H);
+      c.fillStyle = '#7d7fc0'; c.fillRect(0, 0, W, H); c.globalCompositeOperation = 'source-over';
+      // moonbeam
+      c.globalAlpha = 0.13; c.fillStyle = '#cfe0ff'; c.beginPath(); c.moveTo(130, 68); c.lineTo(176, 68); c.lineTo(232, 128); c.lineTo(160, 128); c.closePath(); c.fill(); c.globalAlpha = 1;
+      // window redrawn in moonlight
+      c.save(); c.beginPath(); c.rect(129, 21, 46, 44); c.clip();
+      bands(c, ['#141838', '#1c2150', '#262c66', '#313a7c'], 21, 65, 129, 46);
+      for (let i = 0; i < 14; i++) { const x = 130 + (i * 37) % 44, y = 22 + (i * 23) % 40; if (Math.sin(t * 2 + i) > -0.4) P(c, '#ffffff', x, y); }
+      disc(c, '#fff3d6', 140, 31, 5); disc(c, '#e8dcc0', 142, 33, 1); disc(c, '#e8dcc0', 138, 29, 1);
+      c.restore(); R(c, '#9aa0d0', 151, 21, 2, 44); R(c, '#9aa0d0', 129, 42, 46, 2);
+      // desk lamp as a soft night light
+      c.globalAlpha = 0.22 + Math.sin(t * 2) * 0.03; disc(c, '#ffd27a', 23, 66, 16); c.globalAlpha = 0.35; disc(c, '#ffe6a8', 23, 64, 7); c.globalAlpha = 1;
+      for (let i = 0; i < 7; i++) R(c, '#ffd96b', 16 + i / 2, 57 + i, 14 - i, 1);
+      // laptop standby light
+      if (wrap(t, 2) < 1) P(c, '#7ae582', 268, 84);
+      // teddy's eyes... catch the light, now and then
+      const g = wrap(t, 9); if (g > 6.5 && g < 6.8) { P(c, '#ff3b4f', 60, 33); P(c, '#ff3b4f', 64, 33); }
+    }
+    function draw(c, t, opts = {}) {
       if (!ready) init();
       c.drawImage(bg, 0, 0);
       // window: clouds + sun peeking
@@ -517,7 +539,8 @@
       // lamp glow
       c.globalAlpha = 0.18 + Math.sin(t * 3) * 0.03; disc(c, '#fff3a0', 23, 70, 10); c.globalAlpha = 1;
       // the mole family on the desk
-      MOLES.forEach((id, i) => { const it = window.ITEMS[id]; const x = 30 + i * 8 + (i > 3 ? 1 : 0); mole(c, x, 80, it, it.small); });
+      const F = (window.State && window.State.data.flags) || {};
+      MOLES.forEach((id, i) => { if (F['took_' + id]) return; const it = window.ITEMS[id]; const x = 30 + i * 8 + (i > 3 ? 1 : 0); mole(c, x, 80, it, it.small); });
       if (Math.sin(t * 2.5) > 0.7) sparkle(c, 64, 64, 1, '#ffffff');
       // teddy bear on the shelf (looks out of the window... mostly)
       const bx = 62, by = 34; const look = wrap(t, 14) > 11.2 && wrap(t, 14) < 11.9;
@@ -527,9 +550,12 @@
       R(c, '#ff6b9a', bx - 2, by + 3, 5, 1);
       // Sarı Biber on the bed, bouncing softly
       const bb = Math.sin(t * 2.4) > 0 ? 1 : 0;
-      c.drawImage(PEPPER, 232, 70 + bb, 16, 14 - bb);
-      R(c, 'rgba(232,112,158,0.5)', 234, 84, 12, 1);
-      if (wrap(t, 3) < 0.4) sparkle(c, 250, 70, 1, '#fff8c0');
+      if (!F.took_sari_biber) {
+        c.drawImage(PEPPER, 232, 70 + bb, 16, 14 - bb);
+        R(c, 'rgba(232,112,158,0.5)', 234, 84, 12, 1);
+        if (wrap(t, 3) < 0.4 && !opts.night) sparkle(c, 250, 70, 1, '#fff8c0');
+      }
+      if (opts.night) nightPass(c, t);
     }
     return { draw };
   })();
@@ -596,7 +622,7 @@
     }
     // Sky items must be behind the buildings: draw sky part first, then bg on top using a cut-out.
     let cut = null;
-    function drawWrapped(c, t) {
+    function drawWrapped(c, t, opts) {
       if (!ready) init();
       if (!cut) { cut = mk(W, H, (x) => { x.drawImage(bg, 0, 0); const id = x.getImageData(0, 0, W, H); const sky = mk(W, H, (s) => bands(s, ['#45aefc', '#5ebcff', '#7bcaff', '#9cd8ff', '#c1e7ff', '#e2f4ff'], 0, 100)).getContext('2d').getImageData(0, 0, W, H); for (let i = 0; i < id.data.length; i += 4) { if (id.data[i] === sky.data[i] && id.data[i + 1] === sky.data[i + 1] && id.data[i + 2] === sky.data[i + 2] && i < W * 100 * 4) id.data[i + 3] = 0; } x.putImageData(id, 0, 0); }); }
       c.drawImage(bg, 0, 0, W, 100, 0, 0, W, 100);
@@ -606,7 +632,7 @@
       c.drawImage(cut, 0, 0);
       dyn(c, t);
     }
-    function dyn(c, t) {
+    function dyn(c, t, opts) {
       const hop = wrap(t, 5) < 0.3 ? 2 : 0;
       for (const [x, y] of [[60, 25], [70, 24 - hop]]) { R(c, '#5f6478', x - 1, y - 3, 4, 3); R(c, '#8d93a8', x + 2, y - 5, 2, 2); P(c, '#ff9b2f', x + 4, y - 4); }
       const px = Math.round(86 + Math.sin(t * 0.35) * 10); pigeon(c, px, 118, t, Math.cos(t * 0.35) > 0 ? 1 : -1);
@@ -615,7 +641,7 @@
       R(c, '#f2d24a', 287, 92, 3, 6); R(c, '#7ac04a', 286, 95, 1, 3); R(c, '#6d4a2f', 297, 84, 1, 14); R(c, '#ffd23f', 290, 82, 9, 3);
       steam(c, 277, 88, t, 4);
       steam(c, 312, 28, t * 0.8 + 0.3, 3);
-      osvaldo(c, 142, 89, t);
+      if (!opts || opts.actor !== 'Osvaldo') osvaldo(c, 142, 89, t);
       if (wrap(t, 4) < 0.5) sparkle(c, 30, 55, 1, '#ffffff');
     }
     return { draw: drawWrapped };
@@ -672,12 +698,16 @@
     }
     const A = { skin: '#8d5524', hair: '#1b1416', shirt: '#1f8a4c', collar: '#ffffff', pants: '#2b3a5a', shoes: '#f2f2f2' };
     const B = { skin: '#f1c27d', hair: '#7a4a2a', shirt: '#f5f5f5', stripe: '#1b1416', pants: '#5a4a3a', shoes: '#1b1416', cap: '#e04848' };
-    function draw(c, t) {
+    function base(c, t) {
       if (!ready) init();
       c.drawImage(bg, 0, 0, W, 100, 0, 0, W, 100);
       sun(c, 290, 14, 9, t);
       drawClouds(c, clouds, t);
       c.drawImage(cut, 0, 0);
+    }
+    function draw(c, t, opts = {}) {
+      base(c, t);
+      if (opts.variant === 'knife') { knifeScene(c, t, opts); return; }
       // cat on the wall watching, tail swaying
       const cx = 228, cy = 40;
       R(c, '#3a3440', cx, cy - 5, 8, 5); R(c, '#3a3440', cx + 6, cy - 9, 5, 5); P(c, '#3a3440', cx + 6, cy - 10); P(c, '#3a3440', cx + 10, cy - 10); P(c, '#ffe14d', cx + 7, cy - 7); P(c, '#ffe14d', cx + 9, cy - 7);
@@ -702,7 +732,12 @@
       const fp = wrap(t * 0.5, 1); const fx = Math.round(200 + fp * 140), fy = Math.round(112 - fp * 90 + Math.sin(fp * 20) * 2);
       c.drawImage(BIRD[Math.floor(wrap(t * 9, 2))], fx, fy);
     }
-    return { draw };
+    function knifeScene(c, t, opts) {
+      // the fight has stopped: the green guy staggers back, the striped guy faces you with a knife
+      person(c, 132, 119, Object.assign({}, A, { face: 1, pose: 2, bob: Math.floor(wrap(t * 2, 2)) }));
+      if (opts.actor !== 'Knife Man') window.PX2.frontMan(c, 176, 119, t, { knife: true });
+    }
+    return { draw, base, A, B };
   })();
 
   /* ----- TO BE CONTINUED ----- */
@@ -742,44 +777,7 @@
     }
   }
 
-  /* ---------- speaker portraits (32x32, drawn live in the dialogue box) ---------- */
-  const PORTRAITS = {};
-  PORTRAITS.Osvaldo = (c, t) => {
-    c.clearRect(0, 0, 32, 32);
-    bands(c, ['#35c4b5', '#2fb3a5', '#2a8fd6'], 0, 32, 0, 32);
-    const br = Math.sin(t * 2.2) > 0.2 ? 1 : 0;
-    // coat / shoulders
-    R(c, '#7a5a3a', 3, 25 - br, 26, 8); R(c, '#8f6c48', 5, 26 - br, 6, 2); R(c, '#5f452c', 16, 26 - br, 1, 6); R(c, '#6b4f33', 22, 28 - br, 4, 3);
-    // head
-    R(c, '#c48a5e', 8, 7 - br, 15, 14); R(c, '#a8714a', 8, 18 - br, 15, 2); R(c, '#b07a52', 22, 10 - br, 1, 8);
-    R(c, '#c48a5e', 6, 12 - br, 2, 4); R(c, '#a8714a', 6, 14 - br, 1, 2); // ear
-    // beard
-    R(c, '#6c6258', 7, 16 - br, 17, 9); R(c, '#857a6f', 8, 17 - br, 4, 3); R(c, '#575048', 17, 21 - br, 6, 3); R(c, '#6c6258', 10, 25 - br, 11, 1);
-    // mouth (frown) inside beard
-    R(c, '#3a2522', 12, 19 - br, 7, 1); P(c, '#3a2522', 11, 20 - br); P(c, '#3a2522', 19, 20 - br);
-    // nose
-    R(c, '#a8644a', 15, 13 - br, 3, 3); P(c, '#d79c70', 15, 13 - br);
-    // eyes + angry brows (twitch)
-    const tw = Math.sin(t * 5) > 0.9 ? 1 : 0;
-    R(c, '#ffffff', 10, 11 - br, 3, 2); P(c, '#1b1416', 12, 11 - br); P(c, '#1b1416', 12, 12 - br);
-    R(c, '#ffffff', 18, 11 - br, 3, 2); P(c, '#1b1416', 18, 11 - br); P(c, '#1b1416', 18, 12 - br);
-    R(c, '#2a1d1a', 9, 9 - br - tw, 4, 1); P(c, '#2a1d1a', 13, 10 - br); R(c, '#2a1d1a', 18, 9 - br - tw, 4, 1); P(c, '#2a1d1a', 17, 10 - br);
-    P(c, '#8d6a4a', 9, 15 - br); P(c, '#8d6a4a', 20, 8 - br); P(c, '#8d6a4a', 21, 14 - br); // dirt
-    // beanie
-    R(c, '#9a3b32', 7, 2 - br, 17, 6); R(c, '#b64c40', 8, 2 - br, 15, 2); R(c, '#7f2f28', 7, 7 - br, 17, 2);
-    for (let x = 8; x < 24; x += 3) R(c, '#86332b', x, 3 - br, 1, 4);
-    disc(c, '#d8d0c0', 15, 1 - br, 2);
-    // hand + bitten onion
-    const ob = Math.round(Math.sin(t * 1.6) * 1);
-    R(c, '#c48a5e', 24, 22 + ob, 5, 6); R(c, '#a8714a', 24, 27 + ob, 5, 1);
-    disc(c, '#a0569c', 26, 18 + ob, 5); disc(c, '#c27cc0', 25, 17 + ob, 3); P(c, '#e7c3ea', 23, 15 + ob); P(c, '#7d3e7c', 22, 20 + ob); P(c, '#7d3e7c', 22, 19 + ob);
-    R(c, '#f6efd9', 28, 14 + ob, 4, 4); R(c, '#f6efd9', 27, 15 + ob, 1, 2); P(c, '#ffffff', 29, 15 + ob); P(c, '#d7c9a8', 28, 17 + ob);
-    R(c, '#7bbf4a', 25, 10 + ob, 1, 4); R(c, '#9bd85f', 27, 9 + ob, 1, 4);
-    // flies
-    for (let i = 0; i < 2; i++) { const a = t * (4 + i) + i * 3; P(c, '#1b1416', Math.round(5 + Math.cos(a) * 4 + i * 20), Math.round(4 + Math.sin(a * 1.3) * 3)); }
-  };
-
   window.ART = ART;
-  window.PORTRAITS = PORTRAITS;
+  window.PX = { W, H, R, P, disc, ell, mk, sprite, rng, bands, text3, sparkle, twinkles, wrap, sn, sun, makeCloud, cloudLayer, drawClouds, birds, BIRD, PEPPER, mole, person, osvaldo, pigeon, steam, calcada, skyline, wires, eyelids };
   window.ArtUtil = { W, H, eyelids, drawIcon };
 })();

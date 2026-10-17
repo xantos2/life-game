@@ -172,11 +172,6 @@ body {
     calc(-1 * var(--p)) 0 0 0 var(--ink), var(--p) 0 0 0 var(--ink);
   text-shadow: .2cqw .2cqw 0 var(--ink);
 }
-#dialog .row { display: flex; gap: 1.8cqw; align-items: flex-start; }
-#dialog .portrait {
-  flex: none; width: 8.4cqw; height: 8.4cqw; image-rendering: pixelated; margin-top: .2cqw;
-  box-shadow: 0 calc(-1 * var(--p)) 0 0 var(--ink), 0 var(--p) 0 0 var(--ink), calc(-1 * var(--p)) 0 0 0 var(--ink), var(--p) 0 0 0 var(--ink);
-}
 #dialog .text {
   flex: 1;
   font-family: 'Pixelify', monospace; font-weight: 500; font-size: var(--fs); line-height: 1.45; min-height: 2.6em;
@@ -201,22 +196,6 @@ body {
 #dialog .choices .pbtn:nth-child(4) { background: #ffc6dc; animation-delay: .18s; }
 #dialog .choices .pbtn .k { font-family: 'PS2P', monospace; font-size: 1.05cqw; opacity: .55; margin-right: .8cqw; }
 
-/* HUD */
-#hud { position: absolute; top: 2.2cqw; right: 2.2cqw; display: flex; flex-direction: column; align-items: center; gap: .6cqw; animation: pop .4s steps(5); }
-#hud .slot {
-  width: 6.6cqw; height: 6.6cqw; background: var(--paper); display: flex; align-items: center; justify-content: center;
-  box-shadow:
-    0 calc(-1 * var(--p)) 0 0 var(--ink), 0 var(--p) 0 0 var(--ink),
-    calc(-1 * var(--p)) 0 0 0 var(--ink), var(--p) 0 0 0 var(--ink),
-    inset 0 0 0 calc(1.2 * var(--p)) #e8d8ff, 0 calc(2 * var(--p)) 0 0 rgba(44,31,69,.4);
-}
-#hud .slot canvas { width: 5cqw; height: 5cqw; image-rendering: pixelated; }
-#hud .slot-label {
-  font-family: 'PS2P', monospace; font-size: .85cqw; color: #fff; max-width: 14cqw; text-align: center; line-height: 1.4;
-  text-shadow: .2cqw .2cqw 0 var(--ink), -.2cqw .2cqw 0 var(--ink), .2cqw -.2cqw 0 var(--ink), -.2cqw -.2cqw 0 var(--ink);
-}
-#hud.empty .slot canvas { opacity: .25; }
-
 /* TBC */
 #tbc { gap: 2.4cqw; }
 .tbc-title {
@@ -237,13 +216,97 @@ body {
 }
 #card.on { opacity: 1; }
 
+/* ---------- big speaking character (left) + text box (right) ---------- */
+#actor {
+  position: absolute; left: 1.5%; bottom: 0; width: 31.25%; height: 77.78%;
+  image-rendering: pixelated; z-index: 5; cursor: pointer;
+  filter: drop-shadow(0 0 0 #000);
+}
+#actor.pop { animation: actorIn .35s steps(5); }
+@keyframes actorIn { from { transform: translateX(-12%); opacity: 0; } to { transform: none; opacity: 1; } }
+#game.talk #dialog {
+  left: 34%; right: 2.5%; bottom: 4%; min-height: 46%; padding: 2.2cqw 2.6cqw 2cqw;
+}
+#game.talk #dialog .text { font-size: calc(var(--fs) * 1.08); min-height: 4.2em; }
+#game.talk #dialog .choices { flex-direction: column; gap: 1.1cqw; margin-top: auto; padding-top: 1.2cqw; }
+#game.talk #dialog .choices .pbtn { flex: none; }
+#game.talk #dialog .nametag { left: 2.2cqw; }
+#dialog .pbtn.small, .pbtn.small { font-size: 1.2cqw; padding: .8cqw 1.4cqw; }
+
+/* cutscene speaker name */
+#cutname {
+  position: absolute; left: 50%; transform: translateX(-50%); bottom: calc(19% + 6.4cqw);
+  font-family: 'PS2P', monospace; font-size: 1.3cqw; color: #fff; background: var(--accent); padding: .7cqw 1.2cqw;
+  box-shadow: 0 calc(-1 * var(--p)) 0 0 var(--ink), 0 var(--p) 0 0 var(--ink), calc(-1 * var(--p)) 0 0 0 var(--ink), var(--p) 0 0 0 var(--ink);
+}
+
+/* ---------- inventory ---------- */
+#invBtn {
+  position: absolute; top: 2cqw; right: 2cqw; z-index: 20; width: 6.4cqw; height: 6.4cqw; border: 0; cursor: pointer; padding: 0;
+  background: var(--paper); display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 calc(-1 * var(--p)) 0 0 var(--ink), 0 var(--p) 0 0 var(--ink), calc(-1 * var(--p)) 0 0 0 var(--ink), var(--p) 0 0 0 var(--ink),
+    inset 0 0 0 calc(1.2 * var(--p)) #ffe2b0, 0 calc(2 * var(--p)) 0 0 rgba(44,31,69,.4);
+}
+#invBtn:hover { transform: translateY(calc(-1 * var(--p))); }
+#invBtn canvas { width: 72%; height: 72%; image-rendering: pixelated; }
+#invBtn .badge {
+  position: absolute; right: -1cqw; top: -1cqw; min-width: 2.4cqw; height: 2.4cqw; padding: 0 .4cqw; display: flex; align-items: center; justify-content: center;
+  font-family: 'PS2P', monospace; font-size: 1cqw; color: #fff; background: var(--accent); box-shadow: 0 0 0 var(--p) var(--ink);
+}
+#inv { position: absolute; inset: 0; z-index: 40; background: rgba(26,18,48,.55); display: flex; align-items: center; justify-content: center; }
+.inv-panel {
+  width: 70cqw; background: var(--paper); padding: 2cqw 2.4cqw 2.4cqw; animation: pop .3s steps(4);
+  box-shadow: 0 calc(-1 * var(--p)) 0 0 var(--ink), 0 var(--p) 0 0 var(--ink), calc(-1 * var(--p)) 0 0 0 var(--ink), var(--p) 0 0 0 var(--ink),
+    inset 0 0 0 calc(1.3 * var(--p)) var(--paper2), 0 calc(3 * var(--p)) 0 0 rgba(0,0,0,.4);
+}
+.inv-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.6cqw; }
+.inv-top h2 { margin: 0; font-family: 'PS2P', monospace; font-weight: normal; font-size: 2.2cqw; color: var(--accent); text-shadow: .25cqw .25cqw 0 var(--ink); }
+.inv-body { display: flex; gap: 2.4cqw; }
+.inv-grid { display: grid; grid-template-columns: repeat(4, auto); gap: 1.2cqw; align-content: start; }
+.inv-slot {
+  width: 7.6cqw; height: 7.6cqw; border: 0; padding: 0; cursor: pointer; background: #fff; display: flex; align-items: center; justify-content: center;
+  box-shadow: inset 0 0 0 var(--p) var(--ink), inset calc(var(--p)*2) calc(var(--p)*2) 0 0 #efe4ff;
+}
+.inv-slot:disabled { cursor: default; background: #f6efe0; box-shadow: inset 0 0 0 var(--p) #cdbfa8; }
+.inv-slot canvas { width: 75%; height: 75%; image-rendering: pixelated; }
+.inv-slot:not(:disabled):hover { background: #fff6d6; }
+.inv-slot.sel { box-shadow: inset 0 0 0 calc(var(--p)*1.4) var(--accent), inset calc(var(--p)*2) calc(var(--p)*2) 0 0 #ffe0ec; }
+.inv-detail { flex: 1; min-height: 18cqw; font-family: 'Pixelify', monospace; }
+.inv-head { display: flex; align-items: center; gap: 1.2cqw; }
+.inv-head canvas { width: 5cqw; height: 5cqw; image-rendering: pixelated; }
+.inv-detail h3 { margin: 0; font-family: 'PS2P', monospace; font-weight: normal; font-size: 1.6cqw; }
+.inv-detail p { margin: 1.2cqw 0 0; font-size: 1.7cqw; line-height: 1.4; }
+.inv-from { color: #8a6aa8; font-style: italic; }
+.inv-empty { color: #8a7aa0; }
+.inv-actions { margin-top: 1.8cqw; display: flex; gap: 1.2cqw; align-items: center; flex-wrap: wrap; }
+.inv-q { font-family: 'PS2P', monospace; font-size: 1.05cqw; color: #d6336c; }
+
+/* toast */
+#toast {
+  position: absolute; top: 2.2cqw; left: 50%; transform: translate(-50%, -150%); z-index: 45; display: flex; align-items: center; gap: 1cqw;
+  font-family: 'Pixelify', monospace; font-size: 1.6cqw; background: var(--paper); padding: .9cqw 1.6cqw; transition: transform .3s steps(4);
+  box-shadow: 0 calc(-1 * var(--p)) 0 0 var(--ink), 0 var(--p) 0 0 var(--ink), calc(-1 * var(--p)) 0 0 0 var(--ink), var(--p) 0 0 0 var(--ink);
+  pointer-events: none; opacity: 0;
+}
+#toast.on { transform: translate(-50%, 0); opacity: 1; }
+#toast canvas { width: 3cqw; height: 3cqw; image-rendering: pixelated; }
+
+/* debug */
+#debug {
+  position: fixed; left: 6px; top: 6px; z-index: 100; max-width: 380px; font: 11px/1.4 monospace; color: #e8ffe8;
+  background: rgba(10,10,20,.86); border: 1px solid #5cff8a; padding: 6px 8px;
+}
+#debug.min .dbg-stats, #debug.min .dbg-row { display: none; }
+#debug button, #debug select { font: 11px monospace; margin: 2px 2px 0 0; }
+#debug select { max-width: 220px; }
+.dbg-bar { display: flex; justify-content: space-between; }
+
 /* ---------- portrait / narrow: dialogue goes under the picture ---------- */
 @media (max-aspect-ratio: 1/1) {
   .theme-bright { --p: .6cqw; --fs: 4.4cqw; }
   #game { width: 100vw; height: 100dvh; aspect-ratio: auto; display: flex; flex-direction: column; justify-content: center; background: #1a1230; }
   #stage { position: relative; inset: auto; width: 100%; aspect-ratio: 16 / 9; flex: none; }
   #dialog { position: relative; left: auto; right: auto; bottom: auto; margin: 7cqw 4cqw 4cqw; min-height: 0; padding: 4cqw 4.5cqw; }
-  #dialog .portrait { width: 16cqw; height: 16cqw; }
   #dialog .nametag { top: -6cqw; font-size: 3.2cqw; padding: 1.6cqw 2.6cqw; }
   #dialog .choices { flex-direction: column; gap: 3cqw; margin-top: 3.4cqw; }
   #dialog .choices .pbtn { font-size: 4.2cqw; padding: 2.6cqw 3cqw; }
@@ -256,6 +319,18 @@ body {
   #cuttext { font-size: 3.2cqw; bottom: 22%; }
   #card { font-size: 3.8cqw; }
   .tbc-title { font-size: 5.6cqw; } .tbc-sub { font-size: 2.4cqw; }
-  #hud .slot { width: 10cqw; height: 10cqw; } #hud .slot canvas { width: 8cqw; height: 8cqw; } #hud .slot-label { font-size: 1.8cqw; max-width: 24cqw; }
+  #invBtn { width: 10cqw; height: 10cqw; } #invBtn .badge { font-size: 2cqw; }
+  #game.talk #dialog { left: auto; right: auto; bottom: auto; margin: 7cqw 4cqw 4cqw; min-height: 0; padding: 4cqw 4.5cqw; }
+  #game.talk #dialog .text { font-size: var(--fs); min-height: 0; }
+  #game.talk #dialog .choices { gap: 3cqw; margin-top: 3.4cqw; padding-top: 0; }
+  #game.talk #dialog .nametag { left: 4cqw; }
+  #actor { left: 0; width: 34%; height: 85%; }
+  #dbg, #debug { max-height: 40vh; overflow: auto; }
+  #game.talk #dialog .choices { flex-direction: column; }
+  .inv-panel { width: 92cqw !important; } .inv-body { flex-direction: column; } .inv-top h2 { font-size: 3.4cqw !important; }
+  .inv-detail h3 { font-size: 3cqw !important; } .inv-detail p { font-size: 3.6cqw !important; } .inv-slot { width: 14cqw !important; height: 14cqw !important; }
+  #toast { font-size: 2.6cqw !important; }
+  #cutname { font-size: 2.6cqw; }
   .menu-sub { font-size: 2.2cqw; } .savehint { font-size: 2cqw; }
 }
+

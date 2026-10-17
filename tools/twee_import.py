@@ -11,13 +11,24 @@ Conventions (from the author):
   [NOT]       tag  -> author notes / instructions (never a scene)
   [Character] tag  -> character description
   [Cutscene]  tag  -> cutscene
+  [Eşya]/[Item] tag -> inventory item description (goes into ITEMS in js/scenes.js)
   empty passage    -> not written yet ("To be continued...")
   [[Target]], [[Label->Target]], [[Target<-Label]], [[Label|Target]] -> choices
+  "[[X]] Buton text: Y" (any case, also "Butonda Y yazacak") -> button label hint Y for that link
+  Twee escapes in passage names ("\\ " leading space, "\\[" ...) are unescaped,
+  so ":: \\ Hediyeyi Reddet" becomes the scene key " Hediyeyi Reddet" (leading space kept).
+  Lines with "karma", "relationship"/"ilişki", "item"/"envanter" are reported as hidden-effect hints.
+
+scenes.js may contain engine-only sub-scenes such as "Kavga Et (Osvaldo)" (targets of a
+type:'branch' scene); they are listed separately and are not errors.
 """
 import json, re, sys, os
 
 HEADER = re.compile(r'^::\s*(?P<name>.*?)\s*(?:\[(?P<tags>[^\]]*)\])?\s*(?P<meta>\{.*\})?\s*$')
 LINK = re.compile(r'\[\[(.+?)\]\]')
+BUTTON = re.compile(r'\[\[(.+?)\]\][^\[]*?(?:buton\s*text\s*:\s*(?P<a>[^\[\n]+)|butonda\s+(?P<b>.+?)\s+yazacak)', re.I)
+EFFECT = re.compile(r'karma|relationship|ili[şs]ki|item|envanter', re.I)
+unescape = lambda n: re.sub(r'\\(.)', r'\1', n)
 SPECIAL = {'StoryTitle', 'StoryData'}
 
 
@@ -27,7 +38,7 @@ def parse(path):
         for line in f.read().splitlines():
             m = HEADER.match(line) if line.startswith('::') else None
             if m:
-                cur = {'name': m.group('name'), 'tags': (m.group('tags') or '').split(), 'body': []}
+                cur = {'name': unescape(m.group('name')), 'tags': (m.group('tags') or '').split(), 'body': []}
                 passages.append(cur)
             elif cur is not None:
                 cur['body'].append(line)
@@ -40,12 +51,19 @@ def parse(path):
             elif '<-' in raw: target, label = raw.split('<-', 1)
             elif '|' in raw: label, target = raw.split('|', 1)
             else: label = target = raw
-            links.append({'label': label.strip(), 'to': target.strip()})
+            links.append({'label': label.strip(), 'to': target})  # target kept verbatim: Twine matches it exactly (e.g. ' Hediyeyi Reddet')
+        hints = {}
+        for m in BUTTON.finditer(body):
+            raw = m.group(1); tgt = raw.split('->')[-1].split('|')[-1].split('<-')[0]
+            hints[tgt] = (m.group('a') or m.group('b')).strip().rstrip(')').strip()
+        for l in links:
+            if l['to'] in hints: l['button'] = hints[l['to']]
         p['links'] = links
+        p['effects'] = [l.strip() for l in body.splitlines() if EFFECT.search(l) and not LINK.search(l)]
         p['empty'] = body == ''
         t = [x.lower() for x in p['tags']]
         p['kind'] = ('meta' if p['name'] in SPECIAL else 'note' if 'not' in t else
-                     'character' if 'character' in t else 'cutscene' if 'cutscene' in t else
+                     'character' if 'character' in t else 'item' if ('eşya' in t or 'item' in t) else 'cutscene' if 'cutscene' in t else
                      'tbc' if p['empty'] else 'scene')
     return passages
 
@@ -71,19 +89,24 @@ def main():
             except Exception: pass
 
     print(f'File: {path}\nStart passage: {start}\n')
-    for kind in ['note', 'character', 'scene', 'cutscene', 'tbc']:
+    for kind in ['note', 'character', 'item', 'scene', 'cutscene', 'tbc']:
         group = [p for p in ps if p['kind'] == kind]
         if not group: continue
         print(f'== {kind.upper()} ({len(group)}) ==')
         for p in group:
-            flag = '' if kind in ('note', 'character') else ('  [in scenes.js]' if p['name'] in have else '  [MISSING in scenes.js]')
+            flag = '' if kind in ('note', 'character', 'item') else ('  [in scenes.js]' if p['name'] in have else '  [MISSING in scenes.js]')
             print(f'- {p["name"]}{flag}')
             for l in p['links']:
                 warn = '' if l['to'] in names else '   <-- BROKEN LINK (no such passage)'
-                print(f'    -> [{l["label"]}] => {l["to"]}{warn}')
+                btn = f'  (button text: {l["button"]})' if l.get('button') else ''
+                print(f'    -> [{l["label"]}] => {l["to"]!r}{btn}{warn}')
+            for e in p.get('effects', []): print(f'    * effect hint: {e}')
         print()
     extra = have - names
-    if extra: print('In scenes.js but not in the twee:', ', '.join(sorted(extra)), '\n')
+    sub = sorted(x for x in extra if re.search(r' \(.+\)$', x) and x.rsplit(' (', 1)[0] in names)
+    if sub: print('Engine sub-scenes (branch targets):', ', '.join(sub), '\n')
+    other = sorted(extra - set(sub) - {'Menü', 'Restart', 'Start', 'Continue'})
+    if other: print('In scenes.js but not in the twee:', ', '.join(map(repr, other)), '\n')
 
     if '--json' in sys.argv:
         out = sys.argv[sys.argv.index('--json') + 1]
@@ -92,7 +115,7 @@ def main():
     if '--skeleton' in sys.argv:
         print('// ---- skeletons for passages not yet in scenes.js (translate + fill in) ----')
         for p in ps:
-            if p['kind'] in ('meta', 'note', 'character') or p['name'] in have: continue
+            if p['kind'] in ('meta', 'note', 'character', 'item') or p['name'] in have: continue
             if p['empty']:
                 print(f'  {json.dumps(p["name"], ensure_ascii=False)}: {{ type: \'tbc\' }},'); continue
             body = [l for l in p['body'].splitlines() if l.strip() and not LINK.search(l)]

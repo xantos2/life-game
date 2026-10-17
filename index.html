@@ -13,10 +13,9 @@
   <div id="stage">
     <canvas id="cv" width="320" height="180"></canvas>
 
-    <div id="hud" hidden>
-      <div class="slot" title="Trinket"><canvas id="slotIcon" width="16" height="16"></canvas></div>
-      <div class="slot-label"></div>
-    </div>
+    <canvas id="actor" width="100" height="140" hidden></canvas>
+
+    <button id="invBtn" type="button" title="Inventory (I)" aria-label="Inventory" hidden><canvas width="16" height="16"></canvas><span class="badge" hidden>0</span></button>
 
     <div id="menu" class="overlay" hidden>
       <h1 id="logo" aria-label="Life"></h1>
@@ -35,6 +34,7 @@
       </form>
     </div>
 
+    <div id="cutname" hidden></div>
     <div id="cuttext" hidden></div>
     <div id="cutchoices" hidden></div>
 
@@ -47,9 +47,23 @@
 
   <div id="dialog" hidden>
     <div class="nametag" hidden></div>
-    <div class="row"><canvas class="portrait" width="32" height="32" hidden></canvas><div class="text"></div></div>
+    <div class="text"></div>
     <div class="next">&#9660;</div>
     <div class="choices"></div>
+  </div>
+
+  <div id="inv" hidden>
+    <div class="inv-panel" role="dialog" aria-label="Inventory">
+      <div class="inv-top"><h2>Inventory</h2><button type="button" class="inv-close pbtn small" aria-label="Close">X</button></div>
+      <div class="inv-body"><div class="inv-grid"></div><div class="inv-detail"></div></div>
+    </div>
+  </div>
+  <div id="toast"></div>
+  <div id="debug" hidden>
+    <div class="dbg-bar"><b>DEBUG</b> <button class="dbg-min" type="button">_</button></div>
+    <div class="dbg-stats"></div>
+    <div class="dbg-row"><button class="dbg-chat" type="button">toggle chatted</button><button class="dbg-kp" type="button">karma +5</button><button class="dbg-km" type="button">karma -5</button><button class="dbg-pebble" type="button">+pebble</button></div>
+    <div class="dbg-row"><select class="dbg-sel"></select><button class="dbg-go" type="button">jump</button><label><input type="checkbox" class="dbg-fx"> apply effects</label></div>
   </div>
 
   <div id="fade"></div>
@@ -57,7 +71,10 @@
 </div>
 
 <script src="js/state.js"></script>
+<script src="js/logic.js"></script>
 <script src="js/art.js"></script>
+<script src="js/art2.js"></script>
+<script src="js/actors.js"></script>
 <script src="js/scenes.js"></script>
 <script src="js/engine.js"></script>
 </body>
